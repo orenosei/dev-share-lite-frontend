@@ -23,7 +23,6 @@ export default function RegisterPage() {
       ...prev,
       [name]: value
     }));
-
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -83,7 +82,6 @@ export default function RegisterPage() {
 
       if (result.success) {
         alert('Registration successful! Please login.');
-        // Reset form
         setFormData({
           username: '',
           email: '',
@@ -93,7 +91,8 @@ export default function RegisterPage() {
           bio: '',
           phone: '',
         });
-        window.location.href = '/login';
+        window.location.href = '/login'; // Redirect to login page
+        
       } else {
         if (result.error) {
           setErrors({ general: result.error });

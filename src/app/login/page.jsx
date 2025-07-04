@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import Link from 'next/link';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -61,7 +60,6 @@ export default function LoginPage() {
           password: '',
         });
         window.location.href = '/';
-        
       } else {
         if (result.error) {
           setErrors({ general: result.error });
