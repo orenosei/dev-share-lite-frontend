@@ -52,21 +52,19 @@ export default function Navigation() {
                 <div className="flex items-center">
                   <img
                     className="h-8 w-8 rounded-full"
-                    src={user.avatarUrl || `https://ui-avatars.com/api/?name=${user.username}&background=6366f1&color=fff`}
-                    alt={user.username}
+                    src={user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=6366f1&color=fff`}
+                    alt={user.name || user.email}
                   />
                   <span className="ml-2 text-sm font-medium text-gray-700">
-                    {user.firstName || user.username}
+                    {user.name || user.email}
                   </span>
-                </div>
-                
-                <div className="relative group">
+                </div>                  <div className="relative group">
                   <button className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
                     Account
                   </button>
                   <div className="absolute right-0 w-48 mt-2 py-2 bg-white border rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                     <Link
-                      href={`/profile/${user.username}`}
+                      href={`/user/${user.id}`}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Profile
