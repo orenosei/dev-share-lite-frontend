@@ -177,3 +177,83 @@
   margin: 0.25rem 0 !important;
   line-height: 1.5 !important;
 }
+
+/* Radix UI Dialog styles */
+@keyframes overlay-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-hide {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes content-show {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes content-hide {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+}
+
+[data-state="open"] {
+  animation: overlay-show 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-state="closed"] {
+  animation: overlay-hide 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Search suggestions dropdown styling */
+.search-suggestion-item:hover {
+  background-color: rgb(249 250 251);
+}
+
+.search-suggestion-item.active {
+  background-color: rgb(243 244 246);
+}
+
+/* Advanced search modal styling */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Calendar component styles */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #0ea5e9;
+  --rdp-background-color: #e0f2fe;
+  margin: 1em;
+}
+
+/* Ensure proper z-index for overlays */
+.modal-overlay {
+  z-index: 50;
+}
+
+.popover-content {
+  z-index: 60;
+}
