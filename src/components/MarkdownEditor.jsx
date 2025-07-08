@@ -11,9 +11,15 @@ const MarkdownEditor = React.forwardRef(({
   height = 400,
   preview = 'edit',
   hideToolbar = false,
+  placeholder = '',
   ...props 
 }, ref) => {
   const [editorValue, setEditorValue] = useState(value || '');
+
+  // Update internal state when value prop changes
+  React.useEffect(() => {
+    setEditorValue(value || '');
+  }, [value]);
 
   const handleChange = (val) => {
     setEditorValue(val || '');
@@ -31,6 +37,18 @@ const MarkdownEditor = React.forwardRef(({
         preview={preview}
         hideToolbar={hideToolbar}
         data-color-mode="light"
+        textareaProps={{
+          placeholder: placeholder,
+          style: {
+            fontSize: '14px',
+            lineHeight: '1.5',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
+          }
+        }}
+        style={{
+          backgroundColor: 'transparent',
+          ...props.style
+        }}
         {...props}
       />
     </div>

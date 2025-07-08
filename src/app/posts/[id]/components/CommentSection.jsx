@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
+import { MarkdownEditor } from '../../../../components/MarkdownEditor';
+import { MarkdownContent } from '../../../../components/MarkdownContent';
 import { 
   Heart, 
   MessageCircle, 
@@ -346,23 +348,18 @@ export default function CommentSection({ postId, initialComments = [] }) {
       {isAuthenticated ? (
         <form onSubmit={handleSubmitComment} className="mb-6">
           <div className="mb-4">
-            <Input
-              type="text"
-              placeholder="Write a comment..."
+            <MarkdownEditor
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                  e.preventDefault();
-                  handleSubmitComment(e);
-                }
-              }}
-              className="w-full"
+              onChange={setNewComment}
+              height={150}
+              preview="live"
+              hideToolbar={false}
+              placeholder="Write a comment using Markdown..."
             />
           </div>
           <div className="flex items-center justify-between mt-3">
             <p className="text-xs text-gray-500">
-              Press Ctrl+Enter to submit
+              Supports Markdown formatting
             </p>
             <Button 
               type="submit" 
@@ -470,7 +467,9 @@ export default function CommentSection({ postId, initialComments = [] }) {
                       {formatDate(comment.createdAt)}
                     </span>
                   </div>
-                  <p className="text-gray-700 mb-2">{comment.content}</p>
+                  <div className="text-gray-700 mb-2">
+                    <MarkdownContent content={comment.content} />
+                  </div>
                   
                   {/* Comment Stats */}
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -544,29 +543,20 @@ export default function CommentSection({ postId, initialComments = [] }) {
               {replyingTo === comment.id && (
                 <div className="ml-11 mt-4">
                   <form onSubmit={(e) => handleSubmitReply(e, comment.id)} className="space-y-3">
-                    <Input
-                      type="text"
+                    <MarkdownEditor
+                      value={replyText}
+                      onChange={setReplyText}
+                      height={120}
+                      preview="live"
+                      hideToolbar={false}
                       placeholder={`Reply to ${comment.user?.firstName && comment.user?.lastName 
                         ? `${comment.user.firstName} ${comment.user.lastName}`
                         : comment.user?.username || comment.user?.name || 'this comment'
                       }...`}
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                          e.preventDefault();
-                          handleSubmitReply(e, comment.id);
-                        }
-                        if (e.key === 'Escape') {
-                          setReplyingTo(null);
-                          setReplyText('');
-                        }
-                      }}
-                      className="w-full"
                     />
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-gray-500">
-                        Press Ctrl+Enter to submit, Escape to cancel
+                        Supports Markdown formatting
                       </p>
                       <div className="flex space-x-2">
                         <Button
@@ -630,7 +620,9 @@ export default function CommentSection({ postId, initialComments = [] }) {
                             {formatDate(reply.createdAt)}
                           </span>
                         </div>
-                        <p className="text-gray-700 text-sm mb-1">{reply.content}</p>
+                        <div className="text-gray-700 text-sm mb-1">
+                          <MarkdownContent content={reply.content} />
+                        </div>
                         
                         {/* Reply Stats */}
                         <div className="flex items-center space-x-3 text-xs text-gray-500">
