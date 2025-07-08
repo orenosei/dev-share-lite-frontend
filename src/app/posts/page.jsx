@@ -6,34 +6,45 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import PostCard from '../../components/PostCard';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PostsPage() {
   const { user, isAuthenticated } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
   const [sortBy, setSortBy] = useState('latest');
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5,
+    total: 0,
+    totalPages: 0
+  });
+
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
+  }, [sortBy, selectedTag]);
 
   useEffect(() => {
     fetchPosts();
-  }, [sortBy, selectedTag]);
+  }, [pagination.page, sortBy, selectedTag]);
 
   const fetchPosts = async () => {
     try {
-      let url = 'http://localhost:4000/posts?';
+      let url = `http://localhost:4000/posts?page=${pagination.page}&limit=${pagination.limit}`;
       
       if (sortBy === 'latest') {
-        url += 'sortBy=createdAt&sortOrder=desc';
+        url += '&sortBy=createdAt&sortOrder=desc';
       } else if (sortBy === 'popular') {
-        url += 'sortBy=likesCount&sortOrder=desc';
+        url += '&sortBy=likesCount&sortOrder=desc';
       }
       
       if (selectedTag) {
-        url += `&tags=${selectedTag}`;
+        url += `&tag=${selectedTag}`;
       }
       
       if (searchTerm) {
@@ -46,20 +57,18 @@ export default function PostsPage() {
         const data = await response.json();
         console.log('Fetched posts:', data);
         
-        // Ensure posts is always an array
-        let postsArray = [];
-        if (Array.isArray(data)) {
-          postsArray = data;
-        } else if (data && Array.isArray(data.posts)) {
-          postsArray = data.posts;
-        } else if (data && Array.isArray(data.data)) {
-          postsArray = data.data;
+        // Check if data has pagination structure
+        if (data && data.posts && data.pagination) {
+          setPosts(data.posts);
+          setPagination(prev => ({
+            ...prev,
+            total: data.pagination.total,
+            totalPages: data.pagination.totalPages
+          }));
         } else {
           console.warn('Unexpected data format:', data);
-          postsArray = [];
+          setPosts([]);
         }
-        
-        setPosts(postsArray);
       } else {
         setError('Error loading posts');
         setPosts([]);
@@ -67,7 +76,7 @@ export default function PostsPage() {
     } catch (err) {
       console.error('Error fetching posts:', err);
       setError('Network error');
-      setPosts([]); // Ensure posts is always an array
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -75,7 +84,17 @@ export default function PostsPage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
+    setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
     fetchPosts();
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
+  const handleTagSelect = (tag) => {
+    setSelectedTag(tag);
+    setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
   };
 
   if (loading) {
@@ -150,7 +169,7 @@ export default function PostsPage() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => setSelectedTag('')}
+                onClick={() => handleTagSelect('')}
               >
                 Clear
               </Button>
@@ -168,7 +187,14 @@ export default function PostsPage() {
 
       {/* Posts List */}
       <div className="space-y-6">
-        {!Array.isArray(posts) || posts.length === 0 ? (
+        {loadingPage && (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading posts...</p>
+          </div>
+        )}
+        
+        {!loadingPage && (!Array.isArray(posts) || posts.length === 0) ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg mb-4">No posts found.</p>
             {isAuthenticated && (
@@ -181,22 +207,80 @@ export default function PostsPage() {
             )}
           </div>
         ) : (
-          Array.isArray(posts) && posts.map((post) => (
+          !loadingPage && Array.isArray(posts) && posts.map((post) => (
             <PostCard 
               key={post.id} 
               post={post} 
-              onTagClick={setSelectedTag}
+              onTagClick={handleTagSelect}
             />
           ))
         )}
       </div>
 
-      {/* Load More Button (if needed) */}
-      {posts.length > 0 && (
-        <div className="text-center mt-8">
-          <Button variant="outline" onClick={fetchPosts}>
-            Load more posts
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8">
+          <Button
+            variant="outline"
+            disabled={pagination.page === 1}
+            onClick={() => handlePageChange(pagination.page - 1)}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>              <div className="flex items-center gap-2">
+                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (pagination.totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else {
+                    // Show pages around current page
+                    const start = Math.max(1, pagination.page - 2);
+                    const end = Math.min(pagination.totalPages, start + 4);
+                    pageNum = start + i;
+                    if (pageNum > end) return null;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={pagination.page === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageChange(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                }).filter(Boolean)}
+                
+                {pagination.totalPages > 5 && pagination.page < pagination.totalPages - 2 && (
+                  <>
+                    <span className="text-gray-500">...</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(pagination.totalPages)}
+                    >
+                      {pagination.totalPages}
+                    </Button>
+                  </>
+                )}
+              </div>
+          
+          <Button
+            variant="outline"
+            disabled={pagination.page === pagination.totalPages}
+            onClick={() => handlePageChange(pagination.page + 1)}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
+        </div>
+      )}
+
+      {/* Posts Info */}
+      {posts.length > 0 && (
+        <div className="text-center mt-4 text-sm text-gray-600">
+          Showing {posts.length} of {pagination.total} posts
         </div>
       )}
     </div>
