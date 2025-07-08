@@ -18,6 +18,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "libphonenumber-js": "^1.12.9",
     "lucide-react": "^0.525.0",
     "markdown-to-txt": "^2.0.1",
     "next": "^15.3.4",
@@ -25,8 +26,10 @@
     "react-day-picker": "^9.8.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
+    "react-phone-number-input": "^3.4.12",
     "react-router-dom": "^7.6.3",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "world-countries": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

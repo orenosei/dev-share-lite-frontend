@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { MarkdownEditor } from '../../../components/MarkdownEditor';
+import PhoneNumberInput from '../../../components/PhoneNumberInput';
+import CountrySelect from '../../../components/CountrySelect';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -343,14 +345,16 @@ export default function UserProfilePage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <PhoneNumberInput
                       value={editForm.phone}
-                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                      placeholder="+1234567890"
+                      onChange={(value) => setEditForm({ ...editForm, phone: value || '' })}
+                      placeholder="Enter your phone number"
+                      className="mt-1"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      International format with country code
+                    </p>
                   </div>
                   
                   <div>
@@ -366,6 +370,19 @@ export default function UserProfilePage() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
+                      <Label htmlFor="country">Country</Label>
+                      <CountrySelect
+                        value={editForm.address.country}
+                        onChange={(value) => setEditForm({ 
+                          ...editForm, 
+                          address: { ...editForm.address, country: value }
+                        })}
+                        placeholder="Select your country"
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
                       <Label htmlFor="city">City</Label>
                       <Input
                         id="city"
@@ -375,21 +392,7 @@ export default function UserProfilePage() {
                           ...editForm, 
                           address: { ...editForm.address, city: e.target.value }
                         })}
-                        placeholder="Ho Chi Minh"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="country">Country</Label>
-                      <Input
-                        id="country"
-                        type="text"
-                        value={editForm.address.country}
-                        onChange={(e) => setEditForm({ 
-                          ...editForm, 
-                          address: { ...editForm.address, country: e.target.value }
-                        })}
-                        placeholder="Vietnam"
+                        placeholder="Ho Chi Minh City"
                       />
                     </div>
                   </div>
@@ -471,7 +474,7 @@ export default function UserProfilePage() {
                     {(user.address?.city || user.address?.country) && (
                       <div className="flex items-center">
                         <span className="w-4 h-4 mr-2">📍</span>
-                        {[user.address?.city, user.address?.country].filter(Boolean).join(', ')}
+                        {[user.address?.country, user.address?.city].filter(Boolean).join(', ')}
                       </div>
                     )}
                   </div>

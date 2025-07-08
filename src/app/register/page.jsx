@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import PhoneNumberInput from '../../components/PhoneNumberInput';
+import CountrySelect from '../../components/CountrySelect';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -13,6 +15,10 @@ export default function RegisterPage() {
     lastName: '',
     bio: '',
     phone: '',
+    address: {
+      city: '',
+      country: ''
+    }
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -52,8 +58,8 @@ export default function RegisterPage() {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    if (formData.phone && !/^\+?[1-9]\d{1,14}$/.test(formData.phone)) {
-      newErrors.phone = 'Phone number must be a valid international format';
+    if (formData.phone && formData.phone.length > 0 && formData.phone.length < 10) {
+      newErrors.phone = 'Please enter a valid phone number';
     }
 
     setErrors(newErrors);
@@ -78,6 +84,10 @@ export default function RegisterPage() {
         lastName: formData.lastName || undefined,
         bio: formData.bio || undefined,
         phone: formData.phone || undefined,
+        address: (formData.address.city || formData.address.country) ? {
+          city: formData.address.city || undefined,
+          country: formData.address.country || undefined
+        } : undefined,
       });
 
       if (result.success) {
@@ -90,6 +100,10 @@ export default function RegisterPage() {
           lastName: '',
           bio: '',
           phone: '',
+          address: {
+            city: '',
+            country: ''
+          }
         });
         window.location.href = '/login'; // Redirect to login page
         
@@ -250,20 +264,54 @@ export default function RegisterPage() {
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                 Phone Number
               </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
+              <PhoneNumberInput
                 value={formData.phone}
-                onChange={handleChange}
-                className={`mt-1 block w-full px-3 py-2 border ${
-                  errors.phone ? 'border-red-300' : 'border-gray-300'
-                } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-                placeholder="+1234567890"
+                onChange={(value) => setFormData(prev => ({ ...prev, phone: value || '' }))}
+                placeholder="Enter your phone number"
+                className={`mt-1 ${errors.phone ? 'border-red-300' : ''}`}
               />
               {errors.phone && (
                 <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
               )}
+              <p className="mt-1 text-xs text-gray-500">
+                International format with country code
+              </p>
+            </div>
+
+            {/* Address */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+                  Country
+                </label>
+                <CountrySelect
+                  value={formData.address.country}
+                  onChange={(value) => setFormData(prev => ({
+                    ...prev,
+                    address: { ...prev.address, country: value }
+                  }))}
+                  placeholder="Select your country"
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                  City
+                </label>
+                <input
+                  id="city"
+                  name="city"
+                  type="text"
+                  value={formData.address.city}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    address: { ...prev.address, city: e.target.value }
+                  }))}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Your city"
+                />
+              </div>
             </div>
           </div>
 
