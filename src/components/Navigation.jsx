@@ -52,13 +52,19 @@ export default function Navigation() {
                 <div className="flex items-center">
                   <img
                     className="h-8 w-8 rounded-full"
-                    src={user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=6366f1&color=fff`}
-                    alt={user.name || user.email}
+                    src={user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName + ' ' + user.lastName || user.email)}&background=6366f1&color=fff`}
+                    alt={user.firstName + ' ' + user.lastName || user.email}
                   />
-                  <span className="ml-2 text-sm font-medium text-gray-700">
-                    {user.name || user.email}
-                  </span>
-                </div>                  <div className="relative group">
+                  <div className="ml-2 flex flex-col">
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.firstName} {user.lastName}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {user.email}
+                    </span>
+                  </div>
+                </div>                  
+                <div className="relative group">
                   <button className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
                     Account
                   </button>

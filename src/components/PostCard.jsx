@@ -28,15 +28,15 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
   };
 
 	const truncateContent = (content, maxLength = null) => {
-			if (!content) return '';
-			const defaultLength = variant === 'compact' ? 100 : 200;
-			const length = maxLength || defaultLength;
+		if (!content) return '';
+		const defaultLength = variant === 'compact' ? 100 : 200;
+		const length = maxLength || defaultLength;
 
-			console.log('Truncated content:', content);
-			return content.length > length
-				? content.substring(0, length) + '...'
-				: content;
+		return {
+			truncated: content.length > length ? content.substring(0, length) + '...' : content,
+			isTruncated: content.length > length
 		};
+	};
 
   if (variant === 'compact') {
     return (
@@ -47,7 +47,7 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
           </h3>
           <div className="text-gray-600 text-sm mb-2 prose prose-sm max-w-none">
             <MarkdownPreview
-              source={truncateContent(post.content)}
+              source={truncateContent(post.content).truncated}
               style={{ 
                 backgroundColor: 'transparent',
                 fontSize: '0.875rem',
@@ -55,12 +55,23 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
               }}
               className="!text-gray-600 !text-sm"
             />
+            {truncateContent(post.content).isTruncated && (
+              <Link 
+                href={`/posts/${post.id}`} 
+                className="text-blue-600 hover:text-blue-800 font-medium text-sm mt-1 inline-block"
+              >
+                See more...
+              </Link>
+            )}
           </div>
           <div className="flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center space-x-3">
               <span className="flex items-center">
                 <User className="w-3 h-3 mr-1" />
-                {post.author?.name || post.author?.email || 'Anonymous'}
+                {post.user?.firstName && post.user?.lastName 
+                  ? `${post.user.firstName} ${post.user.lastName}`
+                  : post.user?.username || post.user?.email || 'Anonymous'
+                }
               </span>
               <span className="flex items-center">
                 <Calendar className="w-3 h-3 mr-1" />
@@ -95,7 +106,7 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
       
       <div className="text-gray-600 mb-4 leading-relaxed prose prose-sm max-w-none">
         <MarkdownPreview
-          source={truncateContent(post.content)}
+          source={truncateContent(post.content).truncated}
           style={{ 
             backgroundColor: 'transparent',
             fontSize: '0.9rem',
@@ -103,6 +114,14 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
           }}
           className="!text-gray-600"
         />
+        {truncateContent(post.content).isTruncated && (
+          <Link 
+            href={`/posts/${post.id}`} 
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm mt-2 inline-block"
+          >
+            See more...
+          </Link>
+        )}
       </div>
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -112,7 +131,10 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
             className="flex items-center hover:text-blue-600 transition-colors"
           >
             <User className="h-4 w-4 mr-1" />
-            {post.author?.name || post.user?.name || post.user?.username || 'Anonymous'}
+            {post.user?.firstName && post.user?.lastName 
+              ? `${post.user.firstName} ${post.user.lastName}`
+              : post.user?.username || post.user?.email || 'Anonymous'
+            }
           </Link>
           <div className="flex items-center">
             <Calendar className="h-4 w-4 mr-1" />
