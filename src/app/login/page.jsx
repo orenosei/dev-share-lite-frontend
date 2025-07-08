@@ -1,16 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     identifier: '', // Can be username or email
     password: '',
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Get redirect URL from search params or sessionStorage
+  const getRedirectUrl = () => {
+    const redirectParam = searchParams.get('redirect');
+    const redirectFromStorage = typeof window !== 'undefined' ? sessionStorage.getItem('redirectAfterLogin') : null;
+    return redirectParam || redirectFromStorage || '/';
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,7 +69,15 @@ export default function LoginPage() {
           identifier: '',
           password: '',
         });
-        window.location.href = '/';
+        
+        // Clear redirect from sessionStorage
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('redirectAfterLogin');
+        }
+        
+        // Redirect to the original page or home
+        const redirectUrl = getRedirectUrl();
+        router.push(redirectUrl);
       } else {
         if (result.error) {
           setErrors({ general: result.error });

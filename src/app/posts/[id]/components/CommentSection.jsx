@@ -18,10 +18,34 @@ export default function CommentSection({ postId, initialComments = [] }) {
   const [comments, setComments] = useState(initialComments);
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [commentError, setCommentError] = useState('');
 
   useEffect(() => {
     setComments(initialComments);
   }, [initialComments]);
+
+  const getInitials = (user) => {
+    if (!user) return '?';
+    
+    if (user.firstName && user.lastName) {
+      return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+    }
+    
+    if (user.username) {
+      return user.username.charAt(0).toUpperCase();
+    }
+    
+    if (user.name) {
+      return user.name.charAt(0).toUpperCase();
+    }
+    
+    if (user.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    
+    return '?';
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -34,6 +58,8 @@ export default function CommentSection({ postId, initialComments = [] }) {
   };
 
   const fetchComments = async () => {
+    setIsLoadingComments(true);
+    setCommentError('');
     try {
       const response = await fetch(`http://localhost:4000/comments/post/${postId}`);
       
@@ -42,11 +68,15 @@ export default function CommentSection({ postId, initialComments = [] }) {
         setComments(Array.isArray(data) ? data : []);
       } else {
         console.error('Error fetching comments');
+        setCommentError('Failed to load comments');
         setComments([]);
       }
     } catch (err) {
       console.error('Error fetching comments:', err);
+      setCommentError('Network error while loading comments');
       setComments([]);
+    } finally {
+      setIsLoadingComments(false);
     }
   };
 
@@ -54,6 +84,10 @@ export default function CommentSection({ postId, initialComments = [] }) {
     e.preventDefault();
     
     if (!isAuthenticated) {
+      // Store the current page for redirect after login
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      }
       router.push('/login');
       return;
     }
@@ -63,6 +97,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
     }
 
     setIsSubmittingComment(true);
+    setCommentError('');
 
     try {
       const response = await fetch('http://localhost:4000/comments', {
@@ -82,11 +117,12 @@ export default function CommentSection({ postId, initialComments = [] }) {
         setNewComment('');
         fetchComments(); // Refresh comments
       } else {
-        alert('Error posting comment');
+        const errorData = await response.json().catch(() => ({}));
+        setCommentError(errorData.message || 'Failed to post comment');
       }
     } catch (err) {
       console.error('Error posting comment:', err);
-      alert('Network error');
+      setCommentError('Network error while posting comment');
     } finally {
       setIsSubmittingComment(false);
     }
@@ -107,8 +143,17 @@ export default function CommentSection({ postId, initialComments = [] }) {
               placeholder="Write a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  handleSubmitComment(e);
+                }
+              }}
               className="w-full"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Press Ctrl+Enter to submit
+            </p>
           </div>
           <Button 
             type="submit" 
@@ -118,13 +163,27 @@ export default function CommentSection({ postId, initialComments = [] }) {
             <Send className="w-4 h-4 mr-2" />
             {isSubmittingComment ? 'Posting...' : 'Post Comment'}
           </Button>
+          {commentError && (
+            <p className="text-red-500 text-sm mt-2">
+              {commentError}
+            </p>
+          )}
         </form>
       ) : (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
           <p className="text-gray-600">
-            <Link href="/login" className="text-blue-600 hover:underline">
+            <button
+              onClick={() => {
+                // Store the current page for redirect after login
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+                }
+                router.push('/login');
+              }}
+              className="text-blue-600 hover:underline font-medium"
+            >
               Login
-            </Link>{' '}
+            </button>{' '}
             to post a comment
           </p>
         </div>
@@ -132,7 +191,26 @@ export default function CommentSection({ postId, initialComments = [] }) {
 
       {/* Comments List */}
       <div className="space-y-4">
-        {comments.length === 0 ? (
+        {commentError && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-center">
+            {commentError}
+            <button
+              onClick={() => {
+                setCommentError('');
+                fetchComments();
+              }}
+              className="ml-2 text-red-700 hover:text-red-800 underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+        
+        {isLoadingComments ? (
+          <p className="text-gray-500 text-center py-8">
+            Loading comments...
+          </p>
+        ) : comments.length === 0 ? (
           <p className="text-gray-500 text-center py-8">
             No comments yet. Be the first to comment!
           </p>
@@ -141,13 +219,19 @@ export default function CommentSection({ postId, initialComments = [] }) {
             <div key={comment.id} className="border-b pb-4 last:border-b-0">
               {/* Main Comment */}
               <div className="flex items-start space-x-3">
-                {comment.user?.avatarUrl && (
-                  <img 
-                    src={comment.user.avatarUrl} 
-                    alt={comment.user.username}
-                    className="w-8 h-8 rounded-full"
-                  />
-                )}
+                <div className="flex-shrink-0">
+                  {comment.user?.avatarUrl ? (
+                    <img 
+                      src={comment.user.avatarUrl} 
+                      alt={comment.user.username}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm font-medium">
+                      {getInitials(comment.user)}
+                    </div>
+                  )}
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
                     <Link 
@@ -186,13 +270,19 @@ export default function CommentSection({ postId, initialComments = [] }) {
                 <div className="ml-11 mt-4 space-y-3">
                   {comment.replies.map((reply) => (
                     <div key={reply.id} className="flex items-start space-x-3">
-                      {reply.user?.avatarUrl && (
-                        <img 
-                          src={reply.user.avatarUrl} 
-                          alt={reply.user.username}
-                          className="w-6 h-6 rounded-full"
-                        />
-                      )}
+                      <div className="flex-shrink-0">
+                        {reply.user?.avatarUrl ? (
+                          <img 
+                            src={reply.user.avatarUrl} 
+                            alt={reply.user.username}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-medium">
+                            {getInitials(reply.user)}
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1">
                         <div className="flex items-center mb-1">
                           <Link 
