@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { Button } from '../../../../components/ui/button';
@@ -24,6 +24,18 @@ const MarkdownPreview = dynamic(
 export default function PostContent({ post, onPostUpdate }) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
+  const [isLiking, setIsLiking] = useState(false);
+
+  // Check if the current user has liked this post
+  useEffect(() => {
+    if (isAuthenticated && user && post.likes) {
+      const userLike = post.likes.find(like => like.userId === user.id);
+      setIsLiked(!!userLike);
+    }
+    setLikeCount(post._count?.likes || 0);
+  }, [isAuthenticated, user, post.likes, post._count?.likes]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -37,9 +49,16 @@ export default function PostContent({ post, onPostUpdate }) {
 
   const handleLike = async () => {
     if (!isAuthenticated) {
+      // Store the current page for redirect after login
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      }
       router.push('/login');
       return;
     }
+
+    if (isLiking) return; // Prevent multiple clicks
+    setIsLiking(true);
 
     try {
       const response = await fetch(`http://localhost:4000/posts/${post.id}/like`, {
@@ -48,13 +67,25 @@ export default function PostContent({ post, onPostUpdate }) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${user?.token}`,
         },
+        body: JSON.stringify({ userId: user.id }),
       });
 
       if (response.ok) {
-        onPostUpdate(); // Refresh post data
+        // Toggle like state and update count
+        setIsLiked(!isLiked);
+        setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+        
+        // Refresh post data from parent
+        if (onPostUpdate) {
+          onPostUpdate();
+        }
+      } else {
+        console.error('Error toggling like');
       }
     } catch (err) {
       console.error('Error liking post:', err);
+    } finally {
+      setIsLiking(false);
     }
   };
 
@@ -152,7 +183,7 @@ export default function PostContent({ post, onPostUpdate }) {
         <div className="flex items-center space-x-4">
           <div className="flex items-center text-gray-600">
             <Heart className="w-5 h-5 mr-1" />
-            {post._count?.likes || 0} likes
+            {likeCount} likes
           </div>
           <div className="flex items-center text-gray-600">
             <MessageCircle className="w-5 h-5 mr-1" />
@@ -162,11 +193,12 @@ export default function PostContent({ post, onPostUpdate }) {
         
         <Button 
           onClick={handleLike}
-          variant="outline"
-          className="flex items-center"
+          variant={isLiked ? "outline" : "default"}
+          className={`flex items-center ${isLiked ? '' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+          disabled={isLiking}
         >
-          <Heart className="w-4 h-4 mr-1" />
-          Like
+          <Heart className={`w-4 h-4 mr-1 ${isLiked ? '' : 'fill-white'}`} />
+          {isLiking ? 'Loading...' : (isLiked ? 'Unlike' : 'Like')}
         </Button>
       </div>
     </div>
