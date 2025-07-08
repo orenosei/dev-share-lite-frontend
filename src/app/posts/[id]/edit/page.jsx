@@ -8,7 +8,7 @@ import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { TagInput, Badge } from '../../../../components/ui/badge';
-import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Save, ArrowLeft, Eye, EyeOff, FileText, Tag, X, Search } from 'lucide-react';
 import Link from 'next/link';
 
 export default function EditPostPage() {
@@ -17,13 +17,19 @@ export default function EditPostPage() {
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [error, setError] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [availableTags, setAvailableTags] = useState([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const [showTagBrowser, setShowTagBrowser] = useState(false);
+  const [tagSearchTerm, setTagSearchTerm] = useState('');
   
   const [postData, setPostData] = useState({
     title: '',
     content: '',
-    tags: []
+    tags: [],
+    status: 'PUBLISHED'
   });
   
   const [errors, setErrors] = useState({});
@@ -36,8 +42,26 @@ export default function EditPostPage() {
     
     if (params.id) {
       fetchPost();
+      fetchAvailableTags();
     }
   }, [isAuthenticated, params.id]);
+
+  const fetchAvailableTags = async () => {
+    setIsLoadingTags(true);
+    try {
+      const response = await fetch('http://localhost:4000/posts/tags');
+      if (response.ok) {
+        const tags = await response.json();
+        // Extract tag names from the API response
+        const tagNames = tags.map(tag => tag.name);
+        setAvailableTags(tagNames);
+      }
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+    } finally {
+      setIsLoadingTags(false);
+    }
+  };
 
   const fetchPost = async () => {
     try {
@@ -55,7 +79,8 @@ export default function EditPostPage() {
         setPostData({
           title: data.title,
           content: data.content,
-          tags: Array.isArray(data.tags) ? data.tags.map(tag => typeof tag === 'string' ? tag : tag.name) : []
+          tags: Array.isArray(data.tags) ? data.tags.map(tag => typeof tag === 'string' ? tag : tag.name) : [],
+          status: data.status || 'PUBLISHED'
         });
       } else if (response.status === 404) {
         setError('Post not found');
@@ -85,12 +110,16 @@ export default function EditPostPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = async () => {
+  const handleSave = async (status = null) => {
     if (!validateForm()) {
       return;
     }
 
-    setIsSaving(true);
+    const finalStatus = status || postData.status;
+    const isPublishing = finalStatus === 'PUBLISHED';
+    const setLoading = isPublishing ? setIsSaving : setIsDraftSaving;
+    
+    setLoading(true);
     setErrors({});
 
     try {
@@ -103,7 +132,7 @@ export default function EditPostPage() {
         body: JSON.stringify({
           title: postData.title,
           content: postData.content,
-          status: "PUBLISHED",
+          status: finalStatus,
           tags: postData.tags,
         }),
       });
@@ -118,8 +147,32 @@ export default function EditPostPage() {
       console.error('Error updating post:', err);
       setErrors({ submit: 'Network error' });
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
+  };
+
+  const handleSaveDraft = () => {
+    handleSave('DRAFT');
+  };
+
+  const handlePublish = () => {
+    handleSave('PUBLISHED');
+  };
+
+  const addTagFromBrowser = (tag) => {
+    if (!postData.tags.includes(tag)) {
+      setPostData({
+        ...postData,
+        tags: [...postData.tags, tag]
+      });
+    }
+  };
+
+  const removeTagFromBrowser = (tag) => {
+    setPostData({
+      ...postData,
+      tags: postData.tags.filter(t => t !== tag)
+    });
   };
 
   const handleTagsChange = (newTags) => {
@@ -128,6 +181,11 @@ export default function EditPostPage() {
       tags: newTags
     });
   };
+
+  // Filter tags based on search term
+  const filteredTags = availableTags.filter(tag =>
+    tag.toLowerCase().includes(tagSearchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -201,12 +259,24 @@ export default function EditPostPage() {
               </Button>
             </Link>
             <Button 
-              onClick={handleSave} 
-              disabled={isSaving}
+              onClick={handleSaveDraft} 
+              disabled={isDraftSaving || isSaving}
+              variant="outline"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              {isDraftSaving ? 'Saving...' : 
+                postData.status === 'PUBLISHED' ? 'Convert to Draft' : 'Save as Draft'
+              }
+            </Button>
+            <Button 
+              onClick={handlePublish} 
+              disabled={isSaving || isDraftSaving}
               className="flex items-center"
             >
               <Save className="w-4 h-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? 'Saving...' : 
+                postData.status === 'PUBLISHED' ? 'Save Changes' : 'Publish'
+              }
             </Button>
           </div>
         </div>
@@ -243,12 +313,92 @@ export default function EditPostPage() {
 
                 {/* Tags */}
                 <div>
-                  <Label>Tags</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>Tags</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowTagBrowser(!showTagBrowser)}
+                    >
+                      <Tag className="h-4 w-4 mr-2" />
+                      {showTagBrowser ? 'Hide' : 'Browse'} Tags
+                    </Button>
+                  </div>
+                  
                   <TagInput
                     value={postData.tags}
                     onChange={handleTagsChange}
                     placeholder="Add tags..."
                   />
+                  
+                  {/* Tag Browser */}
+                  {showTagBrowser && (
+                    <div className="mt-3 border border-gray-200 rounded-md p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-medium text-gray-900">Available Tags</h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowTagBrowser(false)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {/* Tag Search */}
+                      <div className="mb-4">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <Input
+                            type="text"
+                            placeholder="Search tags..."
+                            value={tagSearchTerm}
+                            onChange={(e) => setTagSearchTerm(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
+                      </div>
+                      
+                      {isLoadingTags ? (
+                        <div className="text-sm text-gray-500">Loading tags...</div>
+                      ) : filteredTags.length > 0 ? (
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            {filteredTags.map((tag) => {
+                              const isSelected = postData.tags.includes(tag);
+                              return (
+                                <Button
+                                  key={tag}
+                                  variant={isSelected ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => 
+                                    isSelected 
+                                      ? removeTagFromBrowser(tag) 
+                                      : addTagFromBrowser(tag)
+                                  }
+                                  className="h-8"
+                                >
+                                  {tag}
+                                  {isSelected && <X className="h-3 w-3 mr-1" />}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                          
+
+                        </div>
+                      ) : tagSearchTerm ? (
+                        <div className="text-sm text-gray-500">
+                          No tags found matching "{tagSearchTerm}". Try a different search term.
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-500">
+                          No tags available. Start by adding some custom tags!
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
                   <p className="text-sm text-gray-500 mt-1">
                     Press Enter or comma to add tags
                   </p>

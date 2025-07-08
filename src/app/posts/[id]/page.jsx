@@ -29,7 +29,7 @@ export default function PostDetailPage() {
       if (response.ok) {
         const data = await response.json();
         setPost(data);
-        console.log('Fetched post:', data);
+        //console.log('Fetched post:', data);
       } else if (response.status === 404) {
         setError('Post not found');
       } else {
