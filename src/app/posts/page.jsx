@@ -5,7 +5,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
-import { Search, Plus, Heart, MessageCircle, Calendar, User } from 'lucide-react';
+import PostCard from '../../components/PostCard';
+import { Search, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PostsPage() {
@@ -75,25 +76,6 @@ export default function PostsPage() {
   const handleSearch = (e) => {
     e.preventDefault();
     fetchPosts();
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const truncateContent = (content, maxLength = 200) => {
-    if (!content) return '';
-    // Remove markdown syntax for preview
-    const plainText = content.replace(/[#*`>\[\]()]/g, '').replace(/\n/g, ' ');
-    return plainText.length > maxLength 
-      ? plainText.substring(0, maxLength) + '...' 
-      : plainText;
   };
 
   if (loading) {
@@ -200,63 +182,11 @@ export default function PostsPage() {
           </div>
         ) : (
           Array.isArray(posts) && posts.map((post) => (
-            <article key={post.id} className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-3">
-                <Link href={`/posts/${post.id}`} className="flex-1">
-                  <h2 className="text-xl font-semibold text-gray-900 hover:text-indigo-600 cursor-pointer mb-2">
-                    {post.title}
-                  </h2>
-                </Link>
-              </div>
-              
-              <p className="text-gray-600 mb-4 leading-relaxed">
-                {truncateContent(post.content)}
-              </p>
-              
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex items-center space-x-4 text-sm text-gray-500">
-                  <Link 
-                    href={`/user/${post.authorId || post.userId}`}
-                    className="flex items-center hover:text-blue-600 transition-colors"
-                  >
-                    <User className="h-4 w-4 mr-1" />
-                    {post.author?.name || post.user?.name || post.user?.username || 'Anonymous'}
-                  </Link>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {formatDate(post.createdAt)}
-                  </div>
-                  <div className="flex items-center">
-                    <Heart className="h-4 w-4 mr-1" />
-                    {post._count?.likes || 0}
-                  </div>
-                  <div className="flex items-center">
-                    <MessageCircle className="h-4 w-4 mr-1" />
-                    {post._count?.comments || 0}
-                  </div>
-                </div>
-                
-                {post.tags && post.tags.length > 0 && (
-                  <div className="flex gap-2 flex-wrap">
-                    {post.tags.slice(0, 3).map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="cursor-pointer hover:bg-indigo-100"
-                        onClick={() => setSelectedTag(tag.name || tag)}
-                      >
-                        {tag.name || tag}
-                      </Badge>
-                    ))}
-                    {post.tags.length > 3 && (
-                      <Badge variant="outline">
-                        +{post.tags.length - 3} more
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </div>
-            </article>
+            <PostCard 
+              key={post.id} 
+              post={post} 
+              onTagClick={setSelectedTag}
+            />
           ))
         )}
       </div>
