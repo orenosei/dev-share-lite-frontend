@@ -120,3 +120,60 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Markdown Editor Specific Styles */
+.w-md-editor-text-container .w-md-editor-text ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.w-md-editor-text-container .w-md-editor-text ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.w-md-editor-text-container .w-md-editor-text ol li,
+.w-md-editor-text-container .w-md-editor-text ul li {
+  margin: 0.25rem 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* Preview pane styles */
+.w-md-editor-preview ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.w-md-editor-preview ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.w-md-editor-preview ol li,
+.w-md-editor-preview ul li {
+  margin: 0.25rem 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* Markdown preview in PostCard */
+.markdown-preview ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.markdown-preview ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.markdown-preview ol li,
+.markdown-preview ul li {
+  margin: 0.25rem 0 !important;
+  line-height: 1.5 !important;
+}
