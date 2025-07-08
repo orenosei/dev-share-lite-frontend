@@ -180,12 +180,21 @@ function NewPostPage() {
           <TagInput
             value={postData.tags}
             onChange={(tags) => handleInputChange('tags', tags)}
-            placeholder="Enter tags and press Enter..."
+            placeholder="Type tag and press Enter or comma to add..."
             disabled={!isEditing}
+            maxTags={10}
           />
-          <p className="text-sm text-gray-500">
-            Add tags to help others find your post more easily
-          </p>
+          <div className="text-sm text-gray-500 space-y-1">
+            <p>Add tags to help others find your post more easily</p>
+            <p>• Press <kbd className="bg-gray-100 px-1 py-0.5 rounded text-xs">Enter</kbd> or <kbd className="bg-gray-100 px-1 py-0.5 rounded text-xs">comma</kbd> to add a tag</p>
+            <p>• Click the ✕ button to remove a tag</p>
+            <p>• Press <kbd className="bg-gray-100 px-1 py-0.5 rounded text-xs">Backspace</kbd> to remove the last tag</p>
+            {postData.tags.length > 0 && (
+              <p className="text-indigo-600">
+                {postData.tags.length} tag{postData.tags.length > 1 ? 's' : ''} added
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Content */}
@@ -196,7 +205,7 @@ function NewPostPage() {
               value={postData.content}
               onChange={(value) => handleInputChange('content', value)}
               height={500}
-              preview="edit"
+              preview="live"
             />
           ) : (
             <div className="border border-gray-300 rounded-md p-4 min-h-[500px]">

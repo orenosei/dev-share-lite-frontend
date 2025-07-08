@@ -30,6 +30,8 @@ const TagInput = React.forwardRef(({
   value = [], 
   onChange, 
   placeholder = "Add tags...",
+  disabled = false,
+  maxTags = 10,
   ...props 
 }, ref) => {
   const [inputValue, setInputValue] = React.useState("")
@@ -38,7 +40,7 @@ const TagInput = React.forwardRef(({
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault()
       const newTag = inputValue.trim()
-      if (newTag && !value.includes(newTag)) {
+      if (newTag && !value.includes(newTag) && value.length < maxTags) {
         onChange([...value, newTag])
         setInputValue("")
       }
@@ -54,30 +56,40 @@ const TagInput = React.forwardRef(({
   return (
     <div className={cn(
       "flex min-h-[40px] w-full flex-wrap items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2",
+      disabled && "bg-gray-50 border-gray-200 cursor-not-allowed",
       className
     )}>
       {value.map((tag, index) => (
         <Badge key={index} variant="secondary" className="gap-1">
           {tag}
-          <button
-            type="button"
-            onClick={() => removeTag(tag)}
-            className="ml-1 ring-offset-white transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
-          >
-            <X className="h-3 w-3" />
-          </button>
+          {!disabled && (
+            <button
+              type="button"
+              onClick={() => removeTag(tag)}
+              className="ml-1 ring-offset-white transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </Badge>
       ))}
-      <input
-        ref={ref}
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={value.length === 0 ? placeholder : ""}
-        className="flex-1 border-0 bg-transparent outline-none placeholder:text-gray-500"
-        {...props}
-      />
+      {!disabled && (
+        <input
+          ref={ref}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={value.length === 0 ? placeholder : ""}
+          className="flex-1 border-0 bg-transparent outline-none placeholder:text-gray-500"
+          {...props}
+        />
+      )}
+      {value.length >= maxTags && (
+        <span className="text-xs text-gray-500">
+          Maximum {maxTags} tags allowed
+        </span>
+      )}
     </div>
   )
 })
