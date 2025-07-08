@@ -49,9 +49,15 @@ export default function UserProfilePage() {
   useEffect(() => {
     if (params.id) {
       fetchUser();
-      fetchUserPosts();
     }
   }, [params.id]);
+
+  useEffect(() => {
+    // Fetch posts after user data is loaded to determine if it's own profile
+    if (params.id && user) {
+      fetchUserPosts();
+    }
+  }, [params.id, user, currentUser]);
 
   const fetchUser = async () => {
     try {
@@ -87,7 +93,11 @@ export default function UserProfilePage() {
 
   const fetchUserPosts = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/posts/user/${params.id}?status=PUBLISHED`);
+      const currentIsOwnProfile = isAuthenticated && currentUser && user && user.id === currentUser.id;
+      // If it's own profile, get all posts (DRAFT + PUBLISHED)
+      // If it's other profile, only get PUBLISHED posts
+      const statusParam = currentIsOwnProfile ? '' : '?status=PUBLISHED';
+      const response = await fetch(`http://localhost:4000/posts/user/${params.id}${statusParam}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -174,6 +184,28 @@ export default function UserProfilePage() {
     setErrors({});
   };
 
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        const response = await fetch(`http://localhost:4000/posts/${postId}?userId=${currentUser.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${currentUser?.token}`,
+          },
+        });
+
+        if (response.ok) {
+          // Refresh posts list
+          fetchUserPosts();
+        } else {
+          console.error('Error deleting post');
+        }
+      } catch (err) {
+        console.error('Error deleting post:', err);
+      }
+    }
+  };
+
   const getUserFullName = (user) => {
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
@@ -226,6 +258,8 @@ export default function UserProfilePage() {
 
   const isOwnProfile = isAuthenticated && currentUser && user.id === currentUser.id;
   const totalLikes = userPosts.reduce((sum, post) => sum + (post._count?.likes || 0), 0);
+  const publishedPosts = userPosts.filter(post => post.status === 'PUBLISHED');
+  const draftPosts = userPosts.filter(post => post.status === 'DRAFT');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -432,8 +466,17 @@ export default function UserProfilePage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 pt-4 border-t">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{userPosts.length}</div>
-              <div className="text-sm text-gray-600">Posts</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {isOwnProfile ? userPosts.length : publishedPosts.length}
+              </div>
+              <div className="text-sm text-gray-600">
+                {isOwnProfile ? 'Total Posts' : 'Posts'}
+              </div>
+              {isOwnProfile && draftPosts.length > 0 && (
+                <div className="text-xs text-gray-500 mt-1">
+                  {publishedPosts.length} published, {draftPosts.length} draft
+                </div>
+              )}
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900">{totalLikes}</div>
@@ -465,7 +508,12 @@ export default function UserProfilePage() {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <FileText className="w-5 h-5 mr-2" />
-            Posts ({userPosts.length})
+            Posts ({isOwnProfile ? userPosts.length : publishedPosts.length})
+            {isOwnProfile && draftPosts.length > 0 && (
+              <span className="ml-2 text-sm text-gray-500">
+                ({publishedPosts.length} published, {draftPosts.length} draft)
+              </span>
+            )}
           </h2>
 
           {userPosts.length === 0 ? (
@@ -482,11 +530,44 @@ export default function UserProfilePage() {
           ) : (
             <div className="space-y-4">
               {userPosts.map((post) => (
-                <PostCard 
-                  key={post.id} 
-                  post={post} 
-                  className="shadow-none border rounded-lg"
-                />
+                <div key={post.id} className="border rounded-lg">
+                  {/* Status and Actions Header for own posts */}
+                  {isOwnProfile && (
+                    <div className="flex justify-between items-center p-3 border-b bg-gray-50">
+                      <Badge 
+                        variant={post.status === 'PUBLISHED' ? 'default' : 'secondary'}
+                        className={post.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
+                      >
+                        {post.status}
+                      </Badge>
+                      <div className="flex space-x-2">
+                        <Link href={`/posts/${post.id}/edit`}>
+                          <Button variant="outline" size="sm">
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDeletePost(post.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Post Content */}
+                  <div className={isOwnProfile ? '' : 'border rounded-lg'}>
+                    <PostCard 
+                      post={post} 
+                      className="shadow-none border-none"
+                    />
+                  </div>
+                </div>
               ))}
             </div>
           )}
