@@ -6,7 +6,9 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import PostCard from '../../components/PostCard';
-import { Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import AdvancedSearchModal from '../../components/AdvancedSearchModal';
+import RealTimeSearch from '../../components/RealTimeSearch';
+import { Search, Plus, ChevronLeft, ChevronRight, Filter, SlidersHorizontal, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PostsPage() {
@@ -18,6 +20,8 @@ export default function PostsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
   const [sortBy, setSortBy] = useState('latest');
+  const [advancedFilters, setAdvancedFilters] = useState({});
+  const [showQuickFilters, setShowQuickFilters] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 5,
@@ -27,20 +31,34 @@ export default function PostsPage() {
 
   useEffect(() => {
     setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
-  }, [sortBy, selectedTag]);
+  }, [sortBy, selectedTag, searchTerm, advancedFilters]);
+
+  useEffect(() => {
+    fetchPosts(true); // Pass true for page changes
+  }, [pagination.page]);
 
   useEffect(() => {
     fetchPosts();
-  }, [pagination.page, sortBy, selectedTag]);
+  }, [sortBy, selectedTag, searchTerm, advancedFilters]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (isPageChange = false) => {
     try {
+      if (isPageChange) {
+        setLoadingPage(true);
+      } else {
+        setLoading(true);
+      }
+      
       let url = `http://localhost:4000/posts?page=${pagination.page}&limit=${pagination.limit}`;
       
       if (sortBy === 'latest') {
         url += '&sortBy=createdAt&sortOrder=desc';
       } else if (sortBy === 'popular') {
         url += '&sortBy=likesCount&sortOrder=desc';
+      } else if (sortBy === 'mostCommented') {
+        url += '&sortBy=comments&sortOrder=desc';
+      } else if (sortBy === 'oldest') {
+        url += '&sortBy=createdAt&sortOrder=asc';
       }
       
       if (selectedTag) {
@@ -48,7 +66,29 @@ export default function PostsPage() {
       }
       
       if (searchTerm) {
-        url += `&search=${encodeURIComponent(searchTerm)}`;
+        // Handle special search syntax
+        if (searchTerm.startsWith('author:')) {
+          url += `&author=${encodeURIComponent(searchTerm.substring(7))}`;
+        } else {
+          url += `&search=${encodeURIComponent(searchTerm)}`;
+        }
+      }
+
+      // Apply advanced filters
+      if (advancedFilters.author) {
+        url += `&author=${encodeURIComponent(advancedFilters.author)}`;
+      }
+      
+      if (advancedFilters.tags && advancedFilters.tags.length > 0) {
+        url += `&tags=${advancedFilters.tags.join(',')}`;
+      }
+      
+      if (advancedFilters.dateFrom) {
+        url += `&dateFrom=${advancedFilters.dateFrom.toISOString()}`;
+      }
+      
+      if (advancedFilters.dateTo) {
+        url += `&dateTo=${advancedFilters.dateTo.toISOString()}`;
       }
 
       const response = await fetch(url);
@@ -79,13 +119,19 @@ export default function PostsPage() {
       setPosts([]);
     } finally {
       setLoading(false);
+      setLoadingPage(false);
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
-    fetchPosts();
+  const handleRealTimeSearch = (term) => {
+    setSearchTerm(term);
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const handleAdvancedSearch = ({ searchTerm: term, filters }) => {
+    setSearchTerm(term);
+    setAdvancedFilters(filters);
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   const handlePageChange = (newPage) => {
@@ -125,63 +171,150 @@ export default function PostsPage() {
 
       {/* Search and Filters */}
       <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
-        <form onSubmit={handleSearch} className="mb-4">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search posts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+        {/* Main Search */}
+        <div className="mb-6">
+          <div className="flex gap-3 mb-4">
+            <div className="flex-1">
+              <RealTimeSearch
+                onSearch={handleRealTimeSearch}
+                onTagClick={handleTagSelect}
+                placeholder="Search posts, tags, or users... (try 'author:username')"
               />
             </div>
-            <Button type="submit">
-              Search
+            <AdvancedSearchModal
+              onSearch={handleAdvancedSearch}
+              initialSearchTerm={searchTerm}
+              initialFilters={advancedFilters}
+            />
+            <Button
+              variant="outline"
+              onClick={() => setShowQuickFilters(!showQuickFilters)}
+              className="flex items-center gap-2"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
             </Button>
           </div>
-        </form>
-
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Sort by:</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="latest">Latest</option>
-              <option value="popular">Most Popular</option>
-            </select>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Filter by tag:</label>
-            <Input
-              type="text"
-              placeholder="Enter tag..."
-              value={selectedTag}
-              onChange={(e) => setSelectedTag(e.target.value)}
-              className="w-32"
-            />
-            {selectedTag && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => handleTagSelect('')}
-              >
-                Clear
-              </Button>
-            )}
-          </div>
         </div>
+
+        {/* Active Filters Display */}
+        {(selectedTag || searchTerm || Object.keys(advancedFilters).some(key => advancedFilters[key] && (Array.isArray(advancedFilters[key]) ? advancedFilters[key].length > 0 : true))) && (
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Filter className="h-4 w-4 text-gray-600" />
+              <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {searchTerm && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Search: "{searchTerm}"
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchTerm('')} />
+                </Badge>
+              )}
+              {selectedTag && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Tag: {selectedTag}
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedTag('')} />
+                </Badge>
+              )}
+              {advancedFilters.author && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Author: {advancedFilters.author}
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setAdvancedFilters(prev => ({ ...prev, author: '' }))} />
+                </Badge>
+              )}
+              {advancedFilters.tags && advancedFilters.tags.length > 0 && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Tags: {advancedFilters.tags.join(', ')}
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setAdvancedFilters(prev => ({ ...prev, tags: [] }))} />
+                </Badge>
+              )}
+              {advancedFilters.dateFrom && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  From: {advancedFilters.dateFrom.toLocaleDateString()}
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setAdvancedFilters(prev => ({ ...prev, dateFrom: null }))} />
+                </Badge>
+              )}
+              {advancedFilters.dateTo && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  To: {advancedFilters.dateTo.toLocaleDateString()}
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setAdvancedFilters(prev => ({ ...prev, dateTo: null }))} />
+                </Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedTag('');
+                  setAdvancedFilters({});
+                }}
+                className="text-red-600 hover:text-red-700"
+              >
+                Clear All
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Filters */}
+        {showQuickFilters && (
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">Sort by:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="latest">Latest</option>
+                <option value="popular">Most Popular</option>
+                <option value="oldest">Oldest</option>
+                <option value="mostCommented">Most Commented</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">Filter by tag:</label>
+              <Input
+                type="text"
+                placeholder="Enter tag..."
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+                className="w-32"
+              />
+              {selectedTag && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleTagSelect('')}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
           {error}
+        </div>
+      )}
+
+      {/* Search Results Summary */}
+      {(searchTerm || selectedTag || Object.keys(advancedFilters).some(key => advancedFilters[key] && (Array.isArray(advancedFilters[key]) ? advancedFilters[key].length > 0 : true))) && !loading && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md mb-6">
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            <span>
+              Found <strong>{pagination.total}</strong> {pagination.total === 1 ? 'post' : 'posts'}
+              {searchTerm && ` for "${searchTerm}"`}
+              {selectedTag && ` with tag "${selectedTag}"`}
+            </span>
+          </div>
         </div>
       )}
 

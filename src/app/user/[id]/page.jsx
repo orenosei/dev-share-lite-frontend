@@ -16,7 +16,9 @@ import {
   Edit, 
   Save, 
   X,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -30,6 +32,12 @@ export default function UserProfilePage() {
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5,
+    total: 0,
+    totalPages: 0
+  });
   
   const [editForm, setEditForm] = useState({
     firstName: '',
@@ -57,7 +65,7 @@ export default function UserProfilePage() {
     if (params.id && user) {
       fetchUserPosts();
     }
-  }, [params.id, user, currentUser]);
+  }, [params.id, user, currentUser, pagination.page]);
 
   const fetchUser = async () => {
     try {
@@ -96,12 +104,27 @@ export default function UserProfilePage() {
       const currentIsOwnProfile = isAuthenticated && currentUser && user && user.id === currentUser.id;
       // If it's own profile, get all posts (DRAFT + PUBLISHED)
       // If it's other profile, only get PUBLISHED posts
-      const statusParam = currentIsOwnProfile ? '' : '?status=PUBLISHED';
-      const response = await fetch(`http://localhost:4000/posts/user/${params.id}${statusParam}`);
+      let url = `http://localhost:4000/posts/user/${params.id}?page=${pagination.page}&limit=${pagination.limit}`;
+      if (!currentIsOwnProfile) {
+        url += '&status=PUBLISHED';
+      }
+      
+      const response = await fetch(url);
       
       if (response.ok) {
         const data = await response.json();
-        setUserPosts(Array.isArray(data) ? data : []);
+        // Check if data has pagination structure
+        if (data && data.posts && data.pagination) {
+          setUserPosts(data.posts);
+          setPagination(prev => ({
+            ...prev,
+            total: data.pagination.total,
+            totalPages: data.pagination.totalPages
+          }));
+        } else {
+          // Fallback for old format
+          setUserPosts(Array.isArray(data) ? data : []);
+        }
       } else {
         console.error('Error fetching user posts');
         setUserPosts([]);
@@ -110,6 +133,10 @@ export default function UserProfilePage() {
       console.error('Error fetching user posts:', err);
       setUserPosts([]);
     }
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   const validateForm = () => {
@@ -196,6 +223,7 @@ export default function UserProfilePage() {
 
         if (response.ok) {
           // Refresh posts list
+          setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
           fetchUserPosts();
         } else {
           console.error('Error deleting post');
@@ -467,7 +495,7 @@ export default function UserProfilePage() {
           <div className="grid grid-cols-3 gap-4 pt-4 border-t">
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900">
-                {isOwnProfile ? userPosts.length : publishedPosts.length}
+                {isOwnProfile ? pagination.total : publishedPosts.length}
               </div>
               <div className="text-sm text-gray-600">
                 {isOwnProfile ? 'Total Posts' : 'Posts'}
@@ -508,7 +536,7 @@ export default function UserProfilePage() {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <FileText className="w-5 h-5 mr-2" />
-            Posts ({isOwnProfile ? userPosts.length : publishedPosts.length})
+            Posts ({isOwnProfile ? pagination.total : publishedPosts.length})
             {isOwnProfile && draftPosts.length > 0 && (
               <span className="ml-2 text-sm text-gray-500">
                 ({publishedPosts.length} published, {draftPosts.length} draft)
@@ -569,6 +597,73 @@ export default function UserProfilePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                disabled={pagination.page === 1}
+                onClick={() => handlePageChange(pagination.page - 1)}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>                <div className="flex items-center gap-2">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (pagination.totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else {
+                      // Show pages around current page
+                      const start = Math.max(1, pagination.page - 2);
+                      const end = Math.min(pagination.totalPages, start + 4);
+                      pageNum = start + i;
+                      if (pageNum > end) return null;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={pagination.page === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNum)}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  }).filter(Boolean)}
+                  
+                  {pagination.totalPages > 5 && pagination.page < pagination.totalPages - 2 && (
+                    <>
+                      <span className="text-gray-500">...</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(pagination.totalPages)}
+                      >
+                        {pagination.totalPages}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              
+              <Button
+                variant="outline"
+                disabled={pagination.page === pagination.totalPages}
+                onClick={() => handlePageChange(pagination.page + 1)}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          )}
+
+          {/* Posts Info */}
+          {userPosts.length > 0 && (
+            <div className="text-center mt-4 text-sm text-gray-600">
+              Showing {userPosts.length} of {pagination.total} posts
             </div>
           )}
         </div>
