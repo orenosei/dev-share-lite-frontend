@@ -10,7 +10,8 @@ import {
   Users, 
   MessageCircle, 
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  Heart
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -20,7 +21,14 @@ export default function Home() {
   const [stats, setStats] = useState({
     totalPosts: 0,
     totalUsers: 0,
-    totalComments: 0
+    totalComments: 0,
+    totalLikes: 0,
+    recentPosts: 0,
+    newUsers: 0,
+    growthRate: {
+      posts: 0,
+      users: 0
+    }
   });
   const [popularTags, setPopularTags] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,14 +53,41 @@ export default function Home() {
         setPopularTags(Array.isArray(tagsData) ? tagsData.slice(0, 8) : []);
       }
 
-      // Todo: Replace with actual API call to fetch stats
-      setStats({
-        totalPosts: Math.floor(Math.random() * 1000) + 500,
-        totalUsers: Math.floor(Math.random() * 500) + 100,
-        totalComments: Math.floor(Math.random() * 2000) + 1000
-      });
+      // Fetch real stats from API
+      const statsResponse = await fetch('http://localhost:4000/stats');
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        setStats(statsData);
+      } else {
+        // Fallback to default values if API fails
+        setStats({
+          totalPosts: 0,
+          totalUsers: 0,
+          totalComments: 0,
+          totalLikes: 0,
+          recentPosts: 0,
+          newUsers: 0,
+          growthRate: {
+            posts: 0,
+            users: 0
+          }
+        });
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Fallback to default values on error
+      setStats({
+        totalPosts: 0,
+        totalUsers: 0,
+        totalComments: 0,
+        totalLikes: 0,
+        recentPosts: 0,
+        newUsers: 0,
+        growthRate: {
+          posts: 0,
+          users: 0
+        }
+      });
     } finally {
       setLoading(false);
     }
@@ -116,21 +151,32 @@ export default function Home() {
 
       {/* Stats Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
             <FileText className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">{stats.totalPosts.toLocaleString()}</div>
             <div className="text-sm text-gray-600">Posts Shared</div>
+            {stats.recentPosts > 0 && (
+              <div className="text-xs text-green-600 mt-1">+{stats.recentPosts} this week</div>
+            )}
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
             <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">{stats.totalUsers.toLocaleString()}</div>
             <div className="text-sm text-gray-600">Community Members</div>
+            {stats.newUsers > 0 && (
+              <div className="text-xs text-green-600 mt-1">+{stats.newUsers} this month</div>
+            )}
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
             <MessageCircle className="w-8 h-8 text-blue-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">{stats.totalComments.toLocaleString()}</div>
             <div className="text-sm text-gray-600">Comments & Discussions</div>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
+            <Heart className="w-8 h-8 text-red-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-gray-900">{stats.totalLikes.toLocaleString()}</div>
+            <div className="text-sm text-gray-600">Likes & Reactions</div>
           </div>
         </div>
 
