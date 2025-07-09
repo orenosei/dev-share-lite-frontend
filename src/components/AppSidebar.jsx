@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { statsService } from "@/services";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 
@@ -45,13 +46,21 @@ export function AppSidebar() {
     // Fetch basic stats for sidebar
     const fetchStats = async () => {
       try {
-        const response = await fetch('http://localhost:4000/stats');
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
+        const result = await statsService.getGlobalStats();
+        if (result.success) {
+          setStats(result.data);
+        } else {
+          console.error('Error fetching stats:', result.error);
+          setStats(result.data); // Use fallback data
         }
       } catch (error) {
         console.error('Error fetching stats:', error);
+        setStats({
+          totalPosts: 0,
+          totalUsers: 0,
+          totalComments: 0,
+          totalLikes: 0
+        });
       }
     };
 

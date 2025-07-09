@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { statsService } from '../services';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import PostCard from '../components/PostCard';
@@ -53,25 +54,13 @@ export default function Home() {
         setPopularTags(Array.isArray(tagsData) ? tagsData.slice(0, 8) : []);
       }
 
-      // Fetch real stats from API
-      const statsResponse = await fetch('http://localhost:4000/stats');
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
-        setStats(statsData);
+      // Fetch real stats from API using statsService
+      const statsResult = await statsService.getGlobalStats();
+      if (statsResult.success) {
+        setStats(statsResult.data);
       } else {
-        // Fallback to default values if API fails
-        setStats({
-          totalPosts: 0,
-          totalUsers: 0,
-          totalComments: 0,
-          totalLikes: 0,
-          recentPosts: 0,
-          newUsers: 0,
-          growthRate: {
-            posts: 0,
-            users: 0
-          }
-        });
+        console.error('Error fetching stats:', statsResult.error);
+        setStats(statsResult.data); // Use fallback data
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
