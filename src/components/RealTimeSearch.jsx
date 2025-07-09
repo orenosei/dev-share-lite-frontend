@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { userService } from '../services';
 import { 
   Search, 
   Clock, 
@@ -66,17 +67,18 @@ export default function RealTimeSearch({
   const fetchSuggestions = async (term) => {
     setIsLoading(true);
     try {
-      const [postsResponse, tagsResponse, usersResponse] = await Promise.all([
+      const [postsResponse, tagsResponse, usersResult] = await Promise.all([
         fetch(`http://localhost:4000/posts?search=${encodeURIComponent(term)}&limit=3`),
         fetch(`http://localhost:4000/posts/tags`),
-        fetch(`http://localhost:4000/users?search=${encodeURIComponent(term)}&limit=3`)
+        userService.getUsers({ search: term, limit: 3 })
       ]);
 
-      const [postsData, tagsData, usersData] = await Promise.all([
+      const [postsData, tagsData] = await Promise.all([
         postsResponse.ok ? postsResponse.json() : { posts: [] },
-        tagsResponse.ok ? tagsResponse.json() : [],
-        usersResponse.ok ? usersResponse.json() : []
+        tagsResponse.ok ? tagsResponse.json() : []
       ]);
+
+      const usersData = usersResult.success ? usersResult.data : [];
 
       const postSuggestions = postsData.posts?.map(post => ({
         type: 'post',

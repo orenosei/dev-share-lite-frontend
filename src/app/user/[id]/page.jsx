@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { userService } from '../../../services';
 import { MarkdownEditor } from '../../../components/MarkdownEditor';
 import { MarkdownContent } from '../../../components/MarkdownContent';
 import PhoneNumberInput from '../../../components/PhoneNumberInput';
@@ -90,10 +91,10 @@ export default function UserProfilePage() {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/users/${params.id}`);
+      const result = await userService.getUserById(params.id);
       
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
+        const data = result.data;
         setUser(data);
         setEditForm({
           firstName: data.firstName || '',
@@ -107,10 +108,12 @@ export default function UserProfilePage() {
             country: data.address?.country || ''
           }
         });
-      } else if (response.status === 404) {
-        setError('User not found');
       } else {
-        setError('Error loading user profile');
+        if (result.error?.includes('not found') || result.error?.includes('404')) {
+          setError('User not found');
+        } else {
+          setError(result.error || 'Error loading user profile');
+        }
       }
     } catch (err) {
       console.error('Error fetching user:', err);
@@ -238,22 +241,13 @@ export default function UserProfilePage() {
     setErrors({});
 
     try {
-      const response = await fetch(`http://localhost:4000/users/${params.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentUser?.token}`,
-        },
-        body: JSON.stringify(editForm),
-      });
+      const result = await userService.updateUser(params.id, editForm);
 
-      if (response.ok) {
-        const updatedUser = await response.json();
-        setUser(updatedUser);
+      if (result.success) {
+        setUser(result.data);
         setIsEditing(false);
       } else {
-        const errorData = await response.json();
-        setErrors({ submit: errorData.message || 'Error updating profile' });
+        setErrors({ submit: result.error || 'Error updating profile' });
       }
     } catch (err) {
       console.error('Error updating profile:', err);
