@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { postsService } from '../../../services';
 import { MarkdownEditor } from '../../../components/MarkdownEditor';
 import { MarkdownContent } from '../../../components/MarkdownContent';
 import { Button } from '../../../components/ui/button';
@@ -42,11 +43,10 @@ function NewPostPage() {
   const fetchAvailableTags = async () => {
     setIsLoadingTags(true);
     try {
-      const response = await fetch('http://localhost:4000/posts/tags');
-      if (response.ok) {
-        const tags = await response.json();
+      const result = await postsService.getTags();
+      if (result.success) {
         // Extract tag names from the API response
-        const tagNames = tags.map(tag => tag.name);
+        const tagNames = result.data.map(tag => tag.name);
         setAvailableTags(tagNames);
       }
     } catch (error) {
@@ -82,30 +82,22 @@ function NewPostPage() {
     setLoading(true);
     
     try {
-      const response = await fetch('http://localhost:4000/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({
-          title: postData.title,
-          content: postData.content,
-          tags: postData.tags,
-          userId: user.id,
-          status: status
-        }),
+      const result = await postsService.createPost({
+        title: postData.title,
+        content: postData.content,
+        tags: postData.tags,
+        userId: user.id,
+        status: status
       });
-      console.log('Response:', response);
+      console.log('Response:', result);
 
-      if (response.ok) {
-        const newPost = await response.json();
+      if (result.success) {
+        const newPost = result.data;
         const action = isPublishing ? 'published' : 'saved as draft';
         alert(`Post ${action} successfully!`);
         window.location.href = `/posts/${newPost.id}`;
       } else {
-        const errorData = await response.json();
-        alert(`Error ${isPublishing ? 'publishing' : 'saving'} post: ${errorData.message || 'An error occurred'}`);
+        alert(`Error ${isPublishing ? 'publishing' : 'saving'} post: ${result.error || 'An error occurred'}`);
       }
     } catch (error) {
       console.error('Error saving post:', error);

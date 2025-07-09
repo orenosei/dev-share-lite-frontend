@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '../../../components/ui/button';
-import { commentsService } from '../../../services';
+import { commentsService, postsService } from '../../../services';
 import PostContent from './components/PostContent';
 import CommentSection from './components/CommentSection';
 import { ArrowLeft } from 'lucide-react';
@@ -25,16 +25,14 @@ export default function PostDetailPage() {
 
   const fetchPost = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/posts/${params.id}`);
+      const result = await postsService.getPostById(params.id);
       
-      if (response.ok) {
-        const data = await response.json();
-        setPost(data);
-        //console.log('Fetched post:', data);
-      } else if (response.status === 404) {
-        setError('Post not found');
+      if (result.success) {
+        setPost(result.data);
+        setError('');
       } else {
-        setError('Error loading post');
+        console.error('Error fetching post:', result.error);
+        setError(result.error);
       }
     } catch (err) {
       console.error('Error fetching post:', err);

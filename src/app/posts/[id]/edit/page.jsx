@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { postsService } from '../../../../services';
 import { MarkdownEditor } from '../../../../components/MarkdownEditor';
 import { MarkdownContent } from '../../../../components/MarkdownContent';
 import { Button } from '../../../../components/ui/button';
@@ -50,11 +51,10 @@ export default function EditPostPage() {
   const fetchAvailableTags = async () => {
     setIsLoadingTags(true);
     try {
-      const response = await fetch('http://localhost:4000/posts/tags');
-      if (response.ok) {
-        const tags = await response.json();
+      const result = await postsService.getTags();
+      if (result.success) {
         // Extract tag names from the API response
-        const tagNames = tags.map(tag => tag.name);
+        const tagNames = result.data.map(tag => tag.name);
         setAvailableTags(tagNames);
       }
     } catch (error) {
@@ -66,10 +66,10 @@ export default function EditPostPage() {
 
   const fetchPost = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/posts/${params.id}`);
+      const result = await postsService.getPostById(params.id, user.id);
       
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
+        const data = result.data;
         
         // Check if user is the author
         if (data.userId !== user.id) {
@@ -83,10 +83,8 @@ export default function EditPostPage() {
           tags: Array.isArray(data.tags) ? data.tags.map(tag => typeof tag === 'string' ? tag : tag.name) : [],
           status: data.status || 'PUBLISHED'
         });
-      } else if (response.status === 404) {
-        setError('Post not found');
       } else {
-        setError('Error loading post');
+        setError(result.error || 'Error loading post');
       }
     } catch (err) {
       console.error('Error fetching post:', err);
@@ -124,25 +122,17 @@ export default function EditPostPage() {
     setErrors({});
 
     try {
-      const response = await fetch(`http://localhost:4000/posts/${params.id}?userId=${user.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({
-          title: postData.title,
-          content: postData.content,
-          status: finalStatus,
-          tags: postData.tags,
-        }),
-      });
+      const result = await postsService.updatePost(params.id, {
+        title: postData.title,
+        content: postData.content,
+        status: finalStatus,
+        tags: postData.tags,
+      }, user.id);
 
-      if (response.ok) {
+      if (result.success) {
         router.push(`/posts/${params.id}`);
       } else {
-        const errorData = await response.json();
-        setErrors({ submit: errorData.message || 'Error updating post' });
+        setErrors({ submit: result.error || 'Error updating post' });
       }
     } catch (err) {
       console.error('Error updating post:', err);

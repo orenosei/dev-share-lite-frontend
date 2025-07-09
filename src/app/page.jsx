@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { statsService } from '../services';
+import { statsService, postsService } from '../services';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import PostCard from '../components/PostCard';
@@ -40,18 +40,22 @@ export default function Home() {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch trending posts (popular posts)
-      const postsResponse = await fetch('http://localhost:4000/posts?limit=5&sortBy=popular&sortOrder=desc');
-      if (postsResponse.ok) {
-        const postsData = await postsResponse.json();
+      // Fetch trending posts (popular posts) using postsService
+      const postsResult = await postsService.getPosts({
+        limit: 5,
+        sortBy: 'popular',
+        sortOrder: 'desc'
+      });
+      
+      if (postsResult.success) {
+        const postsData = postsResult.data;
         setTrendingPosts(Array.isArray(postsData) ? postsData : postsData.posts || []);
       }
 
-      // Fetch popular tags
-      const tagsResponse = await fetch('http://localhost:4000/posts/tags');
-      if (tagsResponse.ok) {
-        const tagsData = await tagsResponse.json();
-        setPopularTags(Array.isArray(tagsData) ? tagsData.slice(0, 8) : []);
+      // Fetch popular tags using postsService
+      const tagsResult = await postsService.getTags();
+      if (tagsResult.success) {
+        setPopularTags(tagsResult.data.slice(0, 8));
       }
 
       // Fetch real stats from API using statsService

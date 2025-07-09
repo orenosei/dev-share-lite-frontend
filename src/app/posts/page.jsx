@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
+import { postsService } from '../../services';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
@@ -80,52 +81,59 @@ function PostsPageContent() {
         setLoading(true);
       }
       
-      let url = `http://localhost:4000/posts?page=${pagination.page}&limit=${pagination.limit}`;
+      const options = {
+        page: pagination.page,
+        limit: pagination.limit
+      };
       
       if (sortBy === 'latest') {
-        url += '&sortBy=createdAt&sortOrder=desc';
+        options.sortBy = 'createdAt';
+        options.sortOrder = 'desc';
       } else if (sortBy === 'popular') {
-        url += '&sortBy=popular&sortOrder=desc';
+        options.sortBy = 'popular';
+        options.sortOrder = 'desc';
       } else if (sortBy === 'mostCommented') {
-        url += '&sortBy=comments&sortOrder=desc';
+        options.sortBy = 'comments';
+        options.sortOrder = 'desc';
       } else if (sortBy === 'oldest') {
-        url += '&sortBy=createdAt&sortOrder=asc';
+        options.sortBy = 'createdAt';
+        options.sortOrder = 'asc';
       }
       
       if (selectedTag) {
-        url += `&tag=${selectedTag}`;
+        options.tag = selectedTag;
       }
       
       if (searchTerm) {
         // Handle special search syntax
         if (searchTerm.startsWith('author:')) {
-          url += `&author=${encodeURIComponent(searchTerm.substring(7))}`;
+          options.author = searchTerm.substring(7);
         } else {
-          url += `&search=${encodeURIComponent(searchTerm)}`;
+          options.search = searchTerm;
         }
       }
 
       // Apply advanced filters
       if (advancedFilters.author) {
-        url += `&author=${encodeURIComponent(advancedFilters.author)}`;
+        options.author = advancedFilters.author;
       }
       
       if (advancedFilters.tags && advancedFilters.tags.length > 0) {
-        url += `&tags=${advancedFilters.tags.join(',')}`;
+        options.tags = advancedFilters.tags.join(',');
       }
       
       if (advancedFilters.dateFrom) {
-        url += `&dateFrom=${advancedFilters.dateFrom.toISOString()}`;
+        options.dateFrom = advancedFilters.dateFrom.toISOString();
       }
       
       if (advancedFilters.dateTo) {
-        url += `&dateTo=${advancedFilters.dateTo.toISOString()}`;
+        options.dateTo = advancedFilters.dateTo.toISOString();
       }
 
-      const response = await fetch(url);
+      const result = await postsService.getPosts(options);
       
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
+        const data = result.data;
         console.log('Fetched posts:', data);
         
         // Check if data has pagination structure
@@ -141,7 +149,8 @@ function PostsPageContent() {
           setPosts([]);
         }
       } else {
-        setError('Error loading posts');
+        console.error('Error fetching posts:', result.error);
+        setError(result.error);
         setPosts([]);
       }
     } catch (err) {

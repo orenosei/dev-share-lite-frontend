@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { postsService } from '../../../../services';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
 import { MarkdownContent } from '../../../../components/MarkdownContent';
@@ -56,16 +57,9 @@ export default function PostContent({ post, onPostUpdate }) {
     setIsLiking(true);
 
     try {
-      const response = await fetch(`http://localhost:4000/posts/${post.id}/like`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({ userId: user.id }),
-      });
+      const result = await postsService.likePost(post.id, user.id);
 
-      if (response.ok) {
+      if (result.success) {
         // Toggle like state and update count
         setIsLiked(!isLiked);
         setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
@@ -75,7 +69,7 @@ export default function PostContent({ post, onPostUpdate }) {
           onPostUpdate();
         }
       } else {
-        console.error('Error toggling like');
+        console.error('Error toggling like:', result.error);
       }
     } catch (err) {
       console.error('Error liking post:', err);
@@ -90,16 +84,12 @@ export default function PostContent({ post, onPostUpdate }) {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/posts/${post.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${user?.token}`,
-        },
-      });
+      const result = await postsService.deletePost(post.id, user.id);
 
-      if (response.ok) {
+      if (result.success) {
         router.push('/posts');
       } else {
+        console.error('Error deleting post:', result.error);
         alert('Error deleting post');
       }
     } catch (err) {

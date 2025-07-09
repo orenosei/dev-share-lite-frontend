@@ -8,6 +8,7 @@ import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { postsService } from '../services';
 import {
   Select,
   SelectContent,
@@ -90,11 +91,10 @@ export default function AdvancedSearchModal({
 
   const fetchTagSuggestions = async () => {
     try {
-      const response = await fetch('http://localhost:4000/posts/tags');
-      if (response.ok) {
-        const data = await response.json();
-        setTagSuggestions(data);
-        setFilteredTagSuggestions(data.slice(0, 10)); // Show top 10 initially
+      const result = await postsService.getTags();
+      if (result.success) {
+        setTagSuggestions(result.data);
+        setFilteredTagSuggestions(result.data.slice(0, 10)); // Show top 10 initially
       }
     } catch (err) {
       console.error('Error fetching tag suggestions:', err);
@@ -103,10 +103,9 @@ export default function AdvancedSearchModal({
 
   const fetchSearchSuggestions = async (term) => {
     try {
-      const response = await fetch(`http://localhost:4000/posts?search=${encodeURIComponent(term)}&limit=5`);
-      if (response.ok) {
-        const data = await response.json();
-        const titles = data.posts?.map(post => post.title) || [];
+      const result = await postsService.searchPosts(term, { limit: 5 });
+      if (result.success) {
+        const titles = result.data.posts?.map(post => post.title) || [];
         setSuggestions(titles);
       }
     } catch (err) {

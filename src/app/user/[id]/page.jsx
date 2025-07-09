@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
-import { userService } from '../../../services';
+import { userService, postsService } from '../../../services';
 import { MarkdownEditor } from '../../../components/MarkdownEditor';
 import { MarkdownContent } from '../../../components/MarkdownContent';
 import PhoneNumberInput from '../../../components/PhoneNumberInput';
@@ -126,25 +126,28 @@ export default function UserProfilePage() {
   const fetchUserPosts = async () => {
     try {
       const currentIsOwnProfile = isAuthenticated && currentUser && user && user.id === currentUser.id;
-      let url = `http://localhost:4000/posts/user/${params.id}?page=${pagination.page}&limit=${pagination.limit}`;
+      const options = {
+        page: pagination.page,
+        limit: pagination.limit
+      };
       
       if (!currentIsOwnProfile) {
         // For other users' profiles, only show published posts
-        url += '&status=PUBLISHED';
+        options.status = 'PUBLISHED';
       } else {
         // For own profile, apply the selected filter
         if (postFilter === 'published') {
-          url += '&status=PUBLISHED';
+          options.status = 'PUBLISHED';
         } else if (postFilter === 'draft') {
-          url += '&status=DRAFT';
+          options.status = 'DRAFT';
         }
         // For 'all', don't add status filter - show both DRAFT and PUBLISHED
       }
       
-      const response = await fetch(url);
+      const result = await postsService.getPostsByUser(params.id, options);
       
-      if (response.ok) {
-        const data = await response.json();
+      if (result.success) {
+        const data = result.data;
         // Check if data has pagination structure
         if (data && data.posts && data.pagination) {
           setUserPosts(data.posts);
@@ -158,7 +161,7 @@ export default function UserProfilePage() {
           setUserPosts(Array.isArray(data) ? data : []);
         }
       } else {
-        console.error('Error fetching user posts');
+        console.error('Error fetching user posts:', result.error);
         setUserPosts([]);
       }
     } catch (err) {
@@ -173,31 +176,24 @@ export default function UserProfilePage() {
       
       if (currentIsOwnProfile) {
         // For own profile, get counts for all statuses
-        const [allResponse, publishedResponse, draftResponse] = await Promise.all([
-          fetch(`http://localhost:4000/posts/user/${params.id}?page=1&limit=1`),
-          fetch(`http://localhost:4000/posts/user/${params.id}?page=1&limit=1&status=PUBLISHED`),
-          fetch(`http://localhost:4000/posts/user/${params.id}?page=1&limit=1&status=DRAFT`)
-        ]);
-
-        const [allData, publishedData, draftData] = await Promise.all([
-          allResponse.json(),
-          publishedResponse.json(),
-          draftResponse.json()
+        const [allResult, publishedResult, draftResult] = await Promise.all([
+          postsService.getPostsByUser(params.id, { page: 1, limit: 1 }),
+          postsService.getPostsByUser(params.id, { page: 1, limit: 1, status: 'PUBLISHED' }),
+          postsService.getPostsByUser(params.id, { page: 1, limit: 1, status: 'DRAFT' })
         ]);
 
         setPostCounts({
-          total: allData?.pagination?.total || 0,
-          published: publishedData?.pagination?.total || 0,
-          draft: draftData?.pagination?.total || 0
+          total: allResult.success ? allResult.data?.pagination?.total || 0 : 0,
+          published: publishedResult.success ? publishedResult.data?.pagination?.total || 0 : 0,
+          draft: draftResult.success ? draftResult.data?.pagination?.total || 0 : 0
         });
       } else {
         // For other profiles, only get published count
-        const response = await fetch(`http://localhost:4000/posts/user/${params.id}?page=1&limit=1&status=PUBLISHED`);
-        const data = await response.json();
+        const result = await postsService.getPostsByUser(params.id, { page: 1, limit: 1, status: 'PUBLISHED' });
         
         setPostCounts({
-          total: data?.pagination?.total || 0,
-          published: data?.pagination?.total || 0,
+          total: result.success ? result.data?.pagination?.total || 0 : 0,
+          published: result.success ? result.data?.pagination?.total || 0 : 0,
           draft: 0
         });
       }
@@ -277,19 +273,14 @@ export default function UserProfilePage() {
   const handleDeletePost = async (postId) => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
-        const response = await fetch(`http://localhost:4000/posts/${postId}?userId=${currentUser.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${currentUser?.token}`,
-          },
-        });
+        const result = await postsService.deletePost(postId, currentUser.id);
 
-        if (response.ok) {
+        if (result.success) {
           // Refresh posts list
           setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
           fetchUserPosts();
         } else {
-          console.error('Error deleting post');
+          console.error('Error deleting post:', result.error);
         }
       } catch (err) {
         console.error('Error deleting post:', err);
