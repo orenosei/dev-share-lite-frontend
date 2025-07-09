@@ -11,6 +11,9 @@ module.exports = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        gray: {
+          850: '#1f2937', // Custom darker gray
+        },
       },
       typography: {
         DEFAULT: {

@@ -1,10 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
 import PostCard from '../../components/PostCard';
 import AdvancedSearchModal from '../../components/AdvancedSearchModal';
 import RealTimeSearch from '../../components/RealTimeSearch';
@@ -13,6 +21,7 @@ import Link from 'next/link';
 
 export default function PostsPage() {
   const { user, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingPage, setLoadingPage] = useState(false);
@@ -28,6 +37,28 @@ export default function PostsPage() {
     total: 0,
     totalPages: 0
   });
+
+  // Initialize state from URL parameters
+  useEffect(() => {
+    const urlSortBy = searchParams.get('sortBy');
+    const urlTag = searchParams.get('tag');
+    const urlSearch = searchParams.get('search');
+    
+    if (urlSortBy) {
+      setSortBy(urlSortBy);
+      // Show quick filters if sorting is not default
+      if (urlSortBy !== 'latest') {
+        setShowQuickFilters(true);
+      }
+    }
+    if (urlTag) {
+      setSelectedTag(decodeURIComponent(urlTag));
+      setShowQuickFilters(true);
+    }
+    if (urlSearch) {
+      setSearchTerm(decodeURIComponent(urlSearch));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
@@ -54,7 +85,7 @@ export default function PostsPage() {
       if (sortBy === 'latest') {
         url += '&sortBy=createdAt&sortOrder=desc';
       } else if (sortBy === 'popular') {
-        url += '&sortBy=likesCount&sortOrder=desc';
+        url += '&sortBy=popular&sortOrder=desc';
       } else if (sortBy === 'mostCommented') {
         url += '&sortBy=comments&sortOrder=desc';
       } else if (sortBy === 'oldest') {
@@ -147,8 +178,8 @@ export default function PostsPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading posts...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400 mx-auto"></div>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Loading posts...</p>
         </div>
       </div>
     );
@@ -201,8 +232,8 @@ export default function PostsPage() {
         {(selectedTag || searchTerm || Object.keys(advancedFilters).some(key => advancedFilters[key] && (Array.isArray(advancedFilters[key]) ? advancedFilters[key].length > 0 : true))) && (
           <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Filter className="h-4 w-4 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+              <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active Filters:</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {searchTerm && (
@@ -261,21 +292,25 @@ export default function PostsPage() {
         {showQuickFilters && (
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Sort by:</label>
-              <select
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by:</label>
+              <Select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onValueChange={(value) => setSortBy(value)}
               >
-                <option value="latest">Latest</option>
-                <option value="popular">Most Popular</option>
-                <option value="oldest">Oldest</option>
-                <option value="mostCommented">Most Commented</option>
-              </select>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="latest">Latest Posts</SelectItem>
+                  <SelectItem value="popular">Most Popular</SelectItem>
+                  <SelectItem value="oldest">Oldest Posts</SelectItem>
+                  <SelectItem value="mostCommented">Most Commented</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Filter by tag:</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by tag:</label>
               <Input
                 type="text"
                 placeholder="Enter tag..."
@@ -306,7 +341,7 @@ export default function PostsPage() {
 
       {/* Search Results Summary */}
       {(searchTerm || selectedTag || Object.keys(advancedFilters).some(key => advancedFilters[key] && (Array.isArray(advancedFilters[key]) ? advancedFilters[key].length > 0 : true))) && !loading && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md mb-6">
+        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 px-4 py-3 rounded-md mb-6">
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4" />
             <span>
@@ -322,14 +357,14 @@ export default function PostsPage() {
       <div className="space-y-6">
         {loadingPage && (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading posts...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400 mx-auto"></div>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Loading posts...</p>
           </div>
         )}
         
         {!loadingPage && (!Array.isArray(posts) || posts.length === 0) ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg mb-4">No posts found.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">No posts found.</p>
             {isAuthenticated && (
               <Link href="/posts/new">
                 <Button>
@@ -345,6 +380,7 @@ export default function PostsPage() {
               key={post.id} 
               post={post} 
               onTagClick={handleTagSelect}
+              showPopularityScore={sortBy === 'popular'}
             />
           ))
         )}
@@ -387,7 +423,7 @@ export default function PostsPage() {
                 
                 {pagination.totalPages > 5 && pagination.page < pagination.totalPages - 2 && (
                   <>
-                    <span className="text-gray-500">...</span>
+                    <span className="text-gray-500 dark:text-gray-400">...</span>
                     <Button
                       variant="outline"
                       size="sm"
@@ -412,7 +448,7 @@ export default function PostsPage() {
 
       {/* Posts Info */}
       {posts.length > 0 && (
-        <div className="text-center mt-4 text-sm text-gray-600">
+        <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
           Showing {posts.length} of {pagination.total} posts
         </div>
       )}

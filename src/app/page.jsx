@@ -17,7 +17,7 @@ import Link from 'next/link';
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
-  const [recentPosts, setRecentPosts] = useState([]);
+  const [trendingPosts, setTrendingPosts] = useState([]);
   const [stats, setStats] = useState({
     totalPosts: 0,
     totalUsers: 0,
@@ -39,11 +39,11 @@ export default function Home() {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch recent posts
-      const postsResponse = await fetch('http://localhost:4000/posts?limit=5&sortBy=createdAt&sortOrder=desc');
+      // Fetch trending posts (popular posts)
+      const postsResponse = await fetch('http://localhost:4000/posts?limit=5&sortBy=popular&sortOrder=desc');
       if (postsResponse.ok) {
         const postsData = await postsResponse.json();
-        setRecentPosts(Array.isArray(postsData) ? postsData : postsData.posts || []);
+        setTrendingPosts(Array.isArray(postsData) ? postsData : postsData.posts || []);
       }
 
       // Fetch popular tags
@@ -174,22 +174,23 @@ export default function Home() {
             <div className="text-sm text-gray-600 dark:text-gray-400">Comments & Discussions</div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-center">
-            <Heart className="w-8 h-8 text-red-600 dark:text-red-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalLikes.toLocaleString()}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Likes & Reactions</div>
+            <TrendingUp className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{Math.round(stats.totalLikes / Math.max(stats.totalPosts, 1) * 10) / 10}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Avg Engagement</div>
+            <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">likes per post</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Posts */}
+          {/* Trending Posts */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-                  <TrendingUp className="w-5 h-5 mr-2" />
-                  Recent Posts
+                  <TrendingUp className="w-5 h-5 mr-2 text-orange-500" />
+                  Trending Posts
                 </h2>
-                <Link href="/posts">
+                <Link href="/posts?sortBy=popular">
                   <Button variant="outline" size="sm">
                     View All
                     <ArrowRight className="w-4 h-4 ml-1" />
@@ -207,7 +208,7 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              ) : recentPosts.length === 0 ? (
+              ) : trendingPosts.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No posts yet. Be the first to share!</p>
                   {isAuthenticated && (
@@ -218,11 +219,12 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {recentPosts.map((post) => (
+                  {trendingPosts.map((post) => (
                     <PostCard 
                       key={post.id} 
                       post={post} 
                       className="shadow-none border-0 border-b pb-4 last:border-b-0 last:pb-0"
+                      showPopularityScore={true}
                     />
                   ))}
                 </div>
@@ -263,18 +265,30 @@ export default function Home() {
             </div>
 
             {/* Call to Action */}
-            <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg border border-indigo-200 dark:border-indigo-700 p-6">
-              <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">Join the Community</h3>
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-lg border border-indigo-200 dark:border-indigo-700 p-6">
+              <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-orange-500" />
+                Get Trending
+              </h3>
               <p className="text-indigo-700 dark:text-indigo-300 text-sm mb-4">
-                Share your knowledge, learn from others, and connect with fellow developers.
+                Share quality content to get featured in trending posts and reach more developers.
               </p>
-              {!isAuthenticated && (
+              {!isAuthenticated ? (
                 <div className="space-y-2">
                   <Link href="/register">
-                    <Button className="w-full">Sign Up</Button>
+                    <Button className="w-full">Join the Community</Button>
                   </Link>
                   <Link href="/login">
                     <Button variant="outline" className="w-full">Already have an account?</Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link href="/posts/new">
+                    <Button className="w-full">Create Trending Post</Button>
+                  </Link>
+                  <Link href="/posts?sortBy=popular">
+                    <Button variant="outline" className="w-full">View All Trending</Button>
                   </Link>
                 </div>
               )}

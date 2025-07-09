@@ -1,11 +1,11 @@
 'use client';
 
 import { Badge } from './ui/badge';
-import { Heart, MessageCircle, Calendar, User } from 'lucide-react';
+import { Heart, MessageCircle, Calendar, User, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { MarkdownContent } from './MarkdownContent';
 
-export default function PostCard({ post, onTagClick, className = '', variant = 'default' }) {
+export default function PostCard({ post, onTagClick, className = '', variant = 'default', showPopularityScore = false }) {
   const formatDate = (dateString) => {
     if (variant === 'compact') {
       return new Date(dateString).toLocaleDateString('en-US', {
@@ -22,6 +22,23 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
     });
   };
 
+	const calculatePopularityScore = (post) => {
+		const likesCount = post._count?.likes || 0;
+		const commentsCount = post._count?.comments || 0;
+		
+		// Same formula as backend
+		const daysSinceCreation = Math.floor(
+			(Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+		);
+		const recencyBonus = Math.max(0, 30 - daysSinceCreation) * 0.5;
+		return (likesCount * 3) + (commentsCount * 2) + recencyBonus;
+	};
+
+	const isPopular = (post) => {
+		const score = calculatePopularityScore(post);
+		return score >= 10; // Consider popular if score >= 10
+	};
+
 	const truncateContent = (content, maxLength = null) => {
 		if (!content) return '';
 		const defaultLength = variant === 'compact' ? 100 : 200;
@@ -35,28 +52,33 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
 
   if (variant === 'compact') {
     return (
-      <article className={`border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0 ${className}`}>
-        <Link href={`/posts/${post.id}`} className="block hover:bg-gray-50 dark:hover:bg-gray-800 -m-2 p-2 rounded transition-colors">
-          <h3 className="font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 mb-2">
-            {post.title}
-          </h3>
-          <div className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+      <article className={`bg-gradient-to-r from-white to-gray-50/80 dark:from-gray-900 dark:to-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-200 ${className}`}>
+        <Link href={`/posts/${post.id}`} className="block">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <h3 className="font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 flex-1">
+              {post.title}
+            </h3>
+            {(showPopularityScore && isPopular(post)) && (
+              <Badge variant="default" className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 flex items-center gap-1 text-xs shrink-0">
+                <TrendingUp className="h-2 w-2" />
+                Popular
+              </Badge>
+            )}
+          </div>
+          <div className="text-gray-600 dark:text-gray-300 text-sm mb-3 bg-gray-50/30 dark:bg-gray-800/30 rounded p-2 border-l-2 border-indigo-500/20">
             <MarkdownContent
               content={truncateContent(post.content).truncated}
               className="prose-sm"
             />
             {truncateContent(post.content).isTruncated && (
-              <Link 
-                href={`/posts/${post.id}`} 
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm mt-1 inline-block"
-              >
-                See more...
-              </Link>
+              <span className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium text-sm mt-1 inline-block">
+                Read more →
+              </span>
             )}
           </div>
           <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-3">
-              <span className="flex items-center">
+              <span className="flex items-center bg-gray-100/70 dark:bg-gray-700/50 px-2 py-1 rounded-full">
                 <User className="w-3 h-3 mr-1" />
                 {post.user?.firstName && post.user?.lastName 
                   ? `${post.user.firstName} ${post.user.lastName}`
@@ -69,11 +91,11 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="flex items-center">
+              <span className="flex items-center bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full text-red-600 dark:text-red-400">
                 <Heart className="w-3 h-3 mr-1" />
                 {post._count?.likes || 0}
               </span>
-              <span className="flex items-center">
+              <span className="flex items-center bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full text-blue-600 dark:text-blue-400">
                 <MessageCircle className="w-3 h-3 mr-1" />
                 {post._count?.comments || 0}
               </span>
@@ -85,52 +107,70 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
   }
 
   return (
-    <article className={`bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow ${className}`}>
-      <div className="flex justify-between items-start mb-3">
-        <Link href={`/posts/${post.id}`} className="flex-1">
-          <h2 className="text-3xl font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer mb-2">
-            {post.title}
-          </h2>
-        </Link>
-      </div>
-      
-      <div className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-        <MarkdownContent
-          content={truncateContent(post.content).truncated}
-          className="prose-sm"
-        />
-        {truncateContent(post.content).isTruncated && (
-          <Link 
-            href={`/posts/${post.id}`} 
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm mt-2 inline-block"
-          >
-            See more...
+    <article className={`bg-gradient-to-br from-white to-gray-50/90 dark:from-gray-900 dark:to-black p-6 rounded-xl shadow-xl border-2 border-gray-300 dark:border-gray-600 hover:shadow-2xl hover:border-indigo-300 dark:hover:border-indigo-500 hover:scale-[1.01] transition-all duration-300 ${className}`}>
+      <div className="flex justify-between items-start">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap justify-end mb-3">
+            {(showPopularityScore && isPopular(post)) && (
+              <Badge variant="default" className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 flex items-center gap-1 text-xs shadow-md">
+                <TrendingUp className="h-3 w-3" />
+                Popular
+              </Badge>
+            )}
+            {showPopularityScore && (
+              <Badge variant="outline" className="text-xs bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-orange-200 dark:border-orange-700 text-orange-700 dark:text-orange-300">
+                Score: {Math.round(calculatePopularityScore(post))}
+              </Badge>
+            )}
+          </div>
+          <Link href={`/posts/${post.id}`}>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer mb-3 leading-tight">
+              {post.title}
+            </h2>
           </Link>
-        )}
+        </div>
       </div>
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+        <div className="bg-gray-100/80 dark:bg-gray-800/50 rounded-lg p-4 border-l-4 border-indigo-500/50 shadow-sm">
+          <MarkdownContent
+            content={truncateContent(post.content).truncated}
+            className="prose-sm"
+          />
+          {truncateContent(post.content).isTruncated && (
+            <Link 
+              href={`/posts/${post.id}`} 
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium text-sm mt-3 inline-flex items-center gap-1 group"
+            >
+              Read more
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+          )}
+        </div>
+      </div>
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t-2 border-gray-300/60 dark:border-gray-600/60">
         <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
           <Link 
             href={`/user/${post.authorId || post.userId}`}
-            className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="flex items-center hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors bg-gray-200/80 dark:bg-gray-700/70 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md"
           >
-            <User className="h-4 w-4 mr-1" />
+            <User className="h-4 w-4 mr-2" />
             {post.user?.firstName && post.user?.lastName 
               ? `${post.user.firstName} ${post.user.lastName}`
               : post.user?.username || post.user?.email || 'Anonymous'
             }
           </Link>
-          <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-1" />
+          <div className="flex items-center bg-gray-200/80 dark:bg-gray-700/70 px-3 py-1.5 rounded-full shadow-sm">
+            <Calendar className="h-4 w-4 mr-2" />
             {formatDate(post.createdAt)}
           </div>
-          <div className="flex items-center">
-            <Heart className="h-4 w-4 mr-1" />
+          <div className="flex items-center bg-red-100 dark:bg-red-900/30 px-3 py-1.5 rounded-full text-red-600 dark:text-red-400 shadow-sm">
+            <Heart className="h-4 w-4 mr-2" />
             {post._count?.likes || 0}
           </div>
-          <div className="flex items-center">
-            <MessageCircle className="h-4 w-4 mr-1" />
+          <div className="flex items-center bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full text-blue-600 dark:text-blue-400 shadow-sm">
+            <MessageCircle className="h-4 w-4 mr-2" />
             {post._count?.comments || 0}
           </div>
         </div>
@@ -141,14 +181,14 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
               <Badge
                 key={index}
                 variant="secondary"
-                className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-800 transition-colors"
+                className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-indigo-200/50 dark:border-indigo-700/50 text-indigo-700 dark:text-indigo-300"
                 onClick={() => onTagClick && onTagClick(tag.name || tag)}
               >
-                {tag.name || tag}
+                #{tag.name || tag}
               </Badge>
             ))}
             {post.tags.length > 3 && (
-              <Badge variant="outline">
+              <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600">
                 +{post.tags.length - 3} more
               </Badge>
             )}

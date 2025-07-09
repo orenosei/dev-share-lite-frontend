@@ -8,6 +8,13 @@ import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 import { 
   Search, 
   Filter, 
@@ -203,7 +210,7 @@ export default function AdvancedSearchModal({
             {/* Search Suggestions */}
             {suggestions.length > 0 && (
               <div className="border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 shadow-sm">
-                <div className="p-2 border-b text-xs font-medium text-gray-500 flex items-center gap-2">
+                <div className="p-2 border-b border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
                   <TrendingUp className="h-3 w-3" />
                   Suggestions
                 </div>
@@ -211,7 +218,7 @@ export default function AdvancedSearchModal({
                   <button
                     key={index}
                     onClick={() => handleQuickSearch(suggestion)}
-                    className="w-full text-left p-2 hover:bg-gray-50 text-sm border-b last:border-b-0"
+                    className="w-full text-left p-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 last:border-b-0"
                   >
                     {suggestion}
                   </button>
@@ -242,7 +249,7 @@ export default function AdvancedSearchModal({
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="cursor-pointer hover:bg-gray-200"
+                    className="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
                     onClick={() => handleQuickSearch(search)}
                   >
                     {search}
@@ -281,7 +288,7 @@ export default function AdvancedSearchModal({
                   <Badge key={tag} variant="default" className="flex items-center gap-1">
                     {tag}
                     <X
-                      className="h-3 w-3 cursor-pointer hover:bg-red-100"
+                      className="h-3 w-3 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900 rounded"
                       onClick={() => removeTag(tag)}
                     />
                   </Badge>
@@ -311,8 +318,8 @@ export default function AdvancedSearchModal({
             </div>
 
             {/* Tag Suggestions */}
-            <div className="border rounded-md p-2 max-h-40 overflow-y-auto">
-              <div className="text-xs font-medium text-gray-500 mb-2">
+            <div className="border border-gray-200 dark:border-gray-700 rounded-md p-2 max-h-40 overflow-y-auto bg-white dark:bg-gray-800">
+              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
                 {tagSearchTerm ? `Search results (${filteredTagSuggestions.length})` : 'Popular Tags'}
               </div>
               <div className="flex flex-wrap gap-1">
@@ -321,8 +328,8 @@ export default function AdvancedSearchModal({
                     <Badge
                       key={tag.id}
                       variant="outline"
-                      className={`cursor-pointer hover:bg-gray-100 text-xs ${
-                        filters.tags.includes(tag.name) ? 'bg-blue-100 border-blue-300' : ''
+                      className={`cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-xs ${
+                        filters.tags.includes(tag.name) ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600' : ''
                       }`}
                       onClick={() => addTag(tag.name)}
                     >
@@ -330,7 +337,7 @@ export default function AdvancedSearchModal({
                     </Badge>
                   ))
                 ) : (
-                  <div className="text-xs text-gray-500 py-2">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 py-2">
                     {tagSearchTerm ? 'No tags found' : 'No tags available'}
                   </div>
                 )}
@@ -391,21 +398,25 @@ export default function AdvancedSearchModal({
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label>Sort By</Label>
-              <select
+              <Select
                 value={filters.sortBy}
-                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}
               >
-                <option value="latest">Latest</option>
-                <option value="popular">Most Popular</option>
-                <option value="oldest">Oldest</option>
-                <option value="mostCommented">Most Commented</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="latest">Latest Posts</SelectItem>
+                  <SelectItem value="popular">Most Popular</SelectItem>
+                  <SelectItem value="oldest">Oldest Posts</SelectItem>
+                  <SelectItem value="mostCommented">Most Commented</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between items-center pt-4 border-t">
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="outline"
               onClick={clearAllFilters}
