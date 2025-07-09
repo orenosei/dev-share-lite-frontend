@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../contexts/ThemeContext';
+import { authService } from '../../services';
 
 export default function SettingsPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   
@@ -52,21 +53,12 @@ export default function SettingsPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/auth/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({
-          currentPassword: passwordForm.currentPassword,
-          newPassword: passwordForm.newPassword,
-        }),
-      });
+      const result = await authService.changePassword(
+        passwordForm.currentPassword,
+        passwordForm.newPassword
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (result.success) {
         setSuccess('Password changed successfully!');
         setPasswordForm({
           currentPassword: '',
@@ -74,9 +66,10 @@ export default function SettingsPage() {
           confirmPassword: ''
         });
       } else {
-        setErrors({ submit: data.message || 'Failed to change password' });
+        setErrors({ submit: result.error });
       }
     } catch (error) {
+      console.error('Password change error:', error);
       setErrors({ submit: 'Network error. Please try again.' });
     } finally {
       setIsLoading(false);
@@ -244,6 +237,7 @@ export default function SettingsPage() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Account Information
               </h2>
+              
               <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Email:</span>

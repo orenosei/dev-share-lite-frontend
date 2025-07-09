@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../services';
 
 const AuthContext = createContext({});
 
@@ -31,51 +32,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (identifier, password) => {
-    try {
-      const response = await fetch('http://localhost:4000/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ identifier, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUser(data);
-        localStorage.setItem('user', JSON.stringify(data));
-        return { success: true, user: data };
-      } else {
-        return { success: false, error: data.message || 'Login failed' };
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Network error' };
+    const result = await authService.login(identifier, password);
+    
+    if (result.success) {
+      setUser(result.user);
+      localStorage.setItem('user', JSON.stringify(result.user));
     }
+    
+    return result;
   };
 
   const register = async (userData) => {
-    try {
-      const response = await fetch('http://localhost:4000/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        return { success: true, user: data };
-      } else {
-        return { success: false, error: data.message || 'Registration failed' };
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: 'Network error' };
-    }
+    return await authService.register(userData);
   };
 
   const logout = () => {

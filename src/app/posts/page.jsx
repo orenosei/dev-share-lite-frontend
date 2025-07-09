@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/ui/button';
@@ -19,7 +19,7 @@ import RealTimeSearch from '../../components/RealTimeSearch';
 import { Search, Plus, ChevronLeft, ChevronRight, Filter, SlidersHorizontal, X } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PostsPage() {
+function PostsPageContent() {
   const { user, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState([]);
@@ -453,5 +453,13 @@ export default function PostsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PostsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PostsPageContent />
+    </Suspense>
   );
 }
