@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { MarkdownEditor } from '../../../../components/MarkdownEditor';
+import { MarkdownContent } from '../../../../components/MarkdownContent';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
@@ -189,13 +190,13 @@ export default function EditPostPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
           </div>
         </div>
       </div>
@@ -204,11 +205,11 @@ export default function EditPostPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Error</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
             <Link href="/posts">
               <Button>
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -222,7 +223,7 @@ export default function EditPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -233,7 +234,7 @@ export default function EditPostPage() {
                 Back to Post
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Edit Post</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Post</h1>
           </div>
           <div className="flex space-x-3">
             <Button 
@@ -283,7 +284,7 @@ export default function EditPostPage() {
 
         {/* Error Messages */}
         {errors.submit && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-6">
             {errors.submit}
           </div>
         )}
@@ -291,8 +292,8 @@ export default function EditPostPage() {
         <div className={`${showPreview ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : ''}`}>
           {/* Editor Column */}
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-semibold mb-4">Edit Post</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Edit Post</h2>
               
               <div className="space-y-4">
                 {/* Title */}
@@ -307,7 +308,7 @@ export default function EditPostPage() {
                     className={errors.title ? 'border-red-500' : ''}
                   />
                   {errors.title && (
-                    <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                    <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.title}</p>
                   )}
                 </div>
 
@@ -333,9 +334,9 @@ export default function EditPostPage() {
                   
                   {/* Tag Browser */}
                   {showTagBrowser && (
-                    <div className="mt-3 border border-gray-200 rounded-md p-4 bg-gray-50">
+                    <div className="mt-3 border border-gray-200 dark:border-gray-600 rounded-md p-4 bg-gray-50 dark:bg-gray-700">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-medium text-gray-900">Available Tags</h3>
+                        <h3 className="font-medium text-gray-900 dark:text-white">Available Tags</h3>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -360,7 +361,7 @@ export default function EditPostPage() {
                       </div>
                       
                       {isLoadingTags ? (
-                        <div className="text-sm text-gray-500">Loading tags...</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Loading tags...</div>
                       ) : filteredTags.length > 0 ? (
                         <div className="space-y-3">
                           <div className="flex flex-wrap gap-2">
@@ -388,18 +389,18 @@ export default function EditPostPage() {
 
                         </div>
                       ) : tagSearchTerm ? (
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           No tags found matching "{tagSearchTerm}". Try a different search term.
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           No tags available. Start by adding some custom tags!
                         </div>
                       )}
                     </div>
                   )}
                   
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Press Enter or comma to add tags
                   </p>
                 </div>
@@ -407,18 +408,18 @@ export default function EditPostPage() {
                 {/* Content */}
                 <div>
                   <Label htmlFor="content">Content</Label>
-                  <div className={`mt-1 ${errors.content ? 'border border-red-500 rounded' : ''}`}>
+                  <div className={`mt-1 ${errors.content ? 'border border-red-500 dark:border-red-400 rounded' : ''}`}>
                     <MarkdownEditor
                       value={postData.content}
                       onChange={(value) => setPostData({ ...postData, content: value || '' })}
                       preview="edit"
                       hideToolbar={false}
-                      data-color-mode="light"
+                      data-color-mode="auto"
                       height={400}
                     />
                   </div>
                   {errors.content && (
-                    <p className="text-red-500 text-sm mt-1">{errors.content}</p>
+                    <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.content}</p>
                   )}
                 </div>
               </div>
@@ -428,13 +429,13 @@ export default function EditPostPage() {
           {/* Preview Column - Only show when showPreview is true */}
           {showPreview && (
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h2 className="text-xl font-semibold mb-4">Preview</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Preview</h2>
                 
                 <div className="space-y-4">
                   {/* Title Preview */}
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                       {postData.title || 'Post Title'}
                     </h3>
                   </div>
@@ -449,14 +450,8 @@ export default function EditPostPage() {
                   )}
 
                   {/* Content Preview */}
-                  <div className="prose max-w-none">
-                    <MarkdownEditor
-                      value={postData.content || '# Your content will appear here...'}
-                      preview="preview"
-                      hideToolbar
-                      data-color-mode="light"
-                      height={400}
-                    />
+                  <div className="prose dark:prose-invert max-w-none">
+                    <MarkdownContent content={postData.content || '# Your content will appear here...'} />
                   </div>
                 </div>
               </div>

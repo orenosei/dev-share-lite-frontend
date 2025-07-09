@@ -332,13 +332,13 @@ export default function CommentSection({ postId, initialComments = [] }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           Comments ({commentStats.total})
         </h2>
         {commentStats.total > 0 && (
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {commentStats.parentCount} {commentStats.parentCount === 1 ? 'thread' : 'threads'}
           </div>
         )}
@@ -355,10 +355,11 @@ export default function CommentSection({ postId, initialComments = [] }) {
               preview="live"
               hideToolbar={false}
               placeholder="Write a comment using Markdown..."
+              data-color-mode="auto"
             />
           </div>
           <div className="flex items-center justify-between mt-3">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Supports Markdown formatting
             </p>
             <Button 
@@ -371,14 +372,14 @@ export default function CommentSection({ postId, initialComments = [] }) {
             </Button>
           </div>
           {commentError && (
-            <p className="text-red-500 text-sm mt-2">
+            <p className="text-red-500 dark:text-red-400 text-sm mt-2">
               {commentError}
             </p>
           )}
         </form>
       ) : (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-          <p className="text-gray-600">
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+          <p className="text-gray-600 dark:text-gray-300">
             <button
               onClick={() => {
                 // Store the current page for redirect after login
@@ -387,7 +388,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
                 }
                 router.push('/login');
               }}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
             >
               Login
             </button>{' '}
@@ -428,7 +429,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
             </button>
           </div>
         ) : comments.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>No comments yet. Be the first to share your thoughts!</p>
           </div>
@@ -454,25 +455,25 @@ export default function CommentSection({ postId, initialComments = [] }) {
                   <div className="flex items-center mb-2">
                     <Link 
                       href={`/user/${comment.userId}`}
-                      className="flex items-center hover:text-blue-600 transition-colors"
+                      className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-gray-900 dark:text-white">
                         {comment.user?.firstName && comment.user?.lastName 
                           ? `${comment.user.firstName} ${comment.user.lastName}`
                           : comment.user?.username || comment.user?.name || comment.user?.email || 'Anonymous'
                         }
                       </span>
                     </Link>
-                    <span className="text-gray-500 text-sm ml-2">
+                    <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">
                       {formatDate(comment.createdAt)}
                     </span>
                   </div>
-                  <div className="text-gray-700 mb-2">
+                  <div className="text-gray-700 dark:text-gray-300 mb-2">
                     <MarkdownContent content={comment.content} />
                   </div>
                   
                   {/* Comment Stats */}
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                     {isAuthenticated && user ? (
                       <button
                         onClick={() => {
@@ -494,7 +495,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
                         {likingComments.has(comment.id) ? 'Liking...' : `${comment._count?.likes || 0} Likes`}
                       </button>
                     ) : (
-                      <div className="flex items-center text-gray-400">
+                      <div className="flex items-center text-gray-400 dark:text-gray-500">
                         <Heart className="w-4 h-4 mr-1" />
                         {comment._count?.likes || 0} Likes
                       </div>
@@ -516,7 +517,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
                         setReplyText('');
                       }}
                       className={`flex items-center transition-colors ${
-                        isAuthenticated ? 'hover:text-blue-600' : 'hover:text-blue-500 text-gray-400'
+                        isAuthenticated ? 'hover:text-blue-600 dark:hover:text-blue-400' : 'hover:text-blue-500 dark:hover:text-blue-400 text-gray-400 dark:text-gray-500'
                       }`}
                       title={!isAuthenticated ? 'Login to reply' : 'Reply to this comment'}
                     >
@@ -528,7 +529,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
                       <button
                         onClick={() => handleDeleteComment(comment.id, true)}
                         disabled={deletingComments.has(comment.id)}
-                        className="flex items-center hover:text-red-700 transition-colors"
+                        className="flex items-center hover:text-red-700 dark:hover:text-red-400 transition-colors"
                         title="Delete comment"
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
@@ -553,9 +554,10 @@ export default function CommentSection({ postId, initialComments = [] }) {
                         ? `${comment.user.firstName} ${comment.user.lastName}`
                         : comment.user?.username || comment.user?.name || 'this comment'
                       }...`}
+                      data-color-mode="auto"
                     />
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Supports Markdown formatting
                       </p>
                       <div className="flex space-x-2">
@@ -598,7 +600,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
                             className="w-6 h-6 rounded-full"
                           />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-medium">
+                          <div className="w-6 h-6 rounded-full bg-gray-400 dark:bg-gray-600 flex items-center justify-center text-white text-xs font-medium">
                             {getInitials(reply.user)}
                           </div>
                         )}
@@ -607,25 +609,25 @@ export default function CommentSection({ postId, initialComments = [] }) {
                         <div className="flex items-center mb-1">
                           <Link 
                             href={`/user/${reply.userId}`}
-                            className="flex items-center hover:text-blue-600 transition-colors"
+                            className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                           >
-                            <span className="font-medium text-gray-900 text-sm">
+                            <span className="font-medium text-gray-900 dark:text-white text-sm">
                               {reply.user?.firstName && reply.user?.lastName 
                                 ? `${reply.user.firstName} ${reply.user.lastName}`
                                 : reply.user?.username || reply.user?.name || reply.user?.email || 'Anonymous'
                               }
                             </span>
                           </Link>
-                          <span className="text-gray-500 text-xs ml-2">
+                          <span className="text-gray-500 dark:text-gray-400 text-xs ml-2">
                             {formatDate(reply.createdAt)}
                           </span>
                         </div>
-                        <div className="text-gray-700 text-sm mb-1">
+                        <div className="text-gray-700 dark:text-gray-300 text-sm mb-1">
                           <MarkdownContent content={reply.content} />
                         </div>
                         
                         {/* Reply Stats */}
-                        <div className="flex items-center space-x-3 text-xs text-gray-500">
+                        <div className="flex items-center space-x-3 text-xs text-gray-500 dark:text-gray-400">
                           {isAuthenticated && user ? (
                             <button
                               onClick={() => {
@@ -647,7 +649,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
                               {likingComments.has(reply.id) ? 'Liking...' : `${reply._count?.likes || 0} Likes`}
                             </button>
                           ) : (
-                            <div className="flex items-center text-gray-400">
+                            <div className="flex items-center text-gray-400 dark:text-gray-500">
                               <Heart className="w-3 h-3 mr-1" />
                               {reply._count?.likes || 0} Likes
                             </div>
@@ -657,7 +659,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
                             <button
                               onClick={() => handleDeleteComment(reply.id, false)}
                               disabled={deletingComments.has(reply.id)}
-                              className="flex items-center hover:text-red-700 transition-colors"
+                              className="flex items-center hover:text-red-700 dark:hover:text-red-400 transition-colors"
                               title="Delete reply"
                             >
                               <Trash2 className="w-3 h-3 mr-1" />

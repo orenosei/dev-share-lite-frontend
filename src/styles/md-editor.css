@@ -1,0 +1,516 @@
+/* MDEditor (Markdown Editor) specific styles */
+
+/* Markdown Editor Specific Styles - Simplified */
+.w-md-editor-text-container .w-md-editor-text ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.w-md-editor-text-container .w-md-editor-text ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.w-md-editor-text-container .w-md-editor-text ol li,
+.w-md-editor-text-container .w-md-editor-text ul li {
+  margin: 0.25rem 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* Preview pane styles */
+.w-md-editor-preview ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.w-md-editor-preview ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.w-md-editor-preview ol li,
+.w-md-editor-preview ul li {
+  margin: 0.25rem 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* Enhanced markdown editor dark mode styles */
+.dark .w-md-editor {
+  background-color: transparent !important;
+  border-color: #374151 !important;
+}
+
+.dark .w-md-editor-text-container,
+.dark .w-md-editor-text {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark .w-md-editor-preview {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark .w-md-editor-toolbar {
+  background-color: #4b5563 !important;
+  border-color: #6b7280 !important;
+}
+
+.dark .w-md-editor-toolbar ul > li button {
+  color: #d1d5db !important;
+}
+
+.dark .w-md-editor-toolbar ul > li button:hover {
+  background-color: #6b7280 !important;
+  color: #f3f4f6 !important;
+}
+
+/* MDEditor syntax highlighting fixes */
+/* Light mode MDEditor */
+.w-md-editor-preview .token.comment,
+.w-md-editor-preview .token.prolog,
+.w-md-editor-preview .token.doctype,
+.w-md-editor-preview .token.cdata {
+  color: #6b7280;
+}
+
+.w-md-editor-preview .token.punctuation {
+  color: #374151;
+}
+
+.w-md-editor-preview .token.property,
+.w-md-editor-preview .token.tag,
+.w-md-editor-preview .token.boolean,
+.w-md-editor-preview .token.number,
+.w-md-editor-preview .token.constant,
+.w-md-editor-preview .token.symbol,
+.w-md-editor-preview .token.deleted {
+  color: #dc2626;
+}
+
+.w-md-editor-preview .token.selector,
+.w-md-editor-preview .token.attr-name,
+.w-md-editor-preview .token.string,
+.w-md-editor-preview .token.char,
+.w-md-editor-preview .token.builtin,
+.w-md-editor-preview .token.inserted {
+  color: #059669;
+}
+
+.w-md-editor-preview .token.operator,
+.w-md-editor-preview .token.entity,
+.w-md-editor-preview .token.url,
+.w-md-editor-preview .language-css .token.string,
+.w-md-editor-preview .style .token.string {
+  color: #d97706;
+}
+
+.w-md-editor-preview .token.atrule,
+.w-md-editor-preview .token.attr-value,
+.w-md-editor-preview .token.keyword {
+  color: #2563eb;
+}
+
+.w-md-editor-preview .token.function,
+.w-md-editor-preview .token.class-name {
+  color: #7c3aed;
+}
+
+/* Dark mode MDEditor */
+.dark .w-md-editor-preview .token.comment,
+.dark .w-md-editor-preview .token.prolog,
+.dark .w-md-editor-preview .token.doctype,
+.dark .w-md-editor-preview .token.cdata {
+  color: #9ca3af !important;
+}
+
+.dark .w-md-editor-preview .token.punctuation {
+  color: #d1d5db !important;
+}
+
+.dark .w-md-editor-preview .token.property,
+.dark .w-md-editor-preview .token.tag,
+.dark .w-md-editor-preview .token.boolean,
+.dark .w-md-editor-preview .token.number,
+.dark .w-md-editor-preview .token.constant,
+.dark .w-md-editor-preview .token.symbol,
+.dark .w-md-editor-preview .token.deleted {
+  color: #f87171 !important;
+}
+
+.dark .w-md-editor-preview .token.selector,
+.dark .w-md-editor-preview .token.attr-name,
+.dark .w-md-editor-preview .token.string,
+.dark .w-md-editor-preview .token.char,
+.dark .w-md-editor-preview .token.builtin,
+.dark .w-md-editor-preview .token.inserted {
+  color: #34d399 !important;
+}
+
+.dark .w-md-editor-preview .token.operator,
+.dark .w-md-editor-preview .token.entity,
+.dark .w-md-editor-preview .token.url,
+.dark .w-md-editor-preview .language-css .token.string,
+.dark .w-md-editor-preview .style .token.string {
+  color: #fbbf24 !important;
+}
+
+.dark .w-md-editor-preview .token.atrule,
+.dark .w-md-editor-preview .token.attr-value,
+.dark .w-md-editor-preview .token.keyword {
+  color: #60a5fa !important;
+}
+
+.dark .w-md-editor-preview .token.function,
+.dark .w-md-editor-preview .token.class-name {
+  color: #a78bfa !important;
+}
+
+.dark .w-md-editor-preview .token.regex,
+.dark .w-md-editor-preview .token.important,
+.dark .w-md-editor-preview .token.variable {
+  color: #f472b6 !important;
+}
+
+/* MDEditor preview pane dark mode fixes */
+.dark .w-md-editor-preview {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+.dark .w-md-editor-preview pre {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+  border: 1px solid #374151 !important;
+}
+
+.dark .w-md-editor-preview code:not(pre code) {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+  border: 1px solid #4b5563 !important;
+}
+
+.dark .w-md-editor-preview pre code {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+/* MDEditor text area cursor fixes - CRITICAL */
+.w-md-editor-text-container,
+.w-md-editor-text-container .w-md-editor-text,
+.w-md-editor-text-container .w-md-editor-text-input,
+.w-md-editor-text-container .w-md-editor-text-textarea,
+.w-md-editor-text-container textarea {
+  cursor: text !important;
+  line-height: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  position: relative !important;
+}
+
+/* Remove any conflicting positioning or transforms */
+.w-md-editor-text-container .w-md-editor-text {
+  transform: none !important;
+  top: 0 !important;
+  left: 0 !important;
+  margin: 0 !important;
+  padding: 8px !important;
+}
+
+/* Ensure proper line height and spacing */
+.w-md-editor-text-container .w-md-editor-text-input,
+.w-md-editor-text-container .w-md-editor-text-textarea {
+  line-height: 1.5 !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 14px !important;
+  padding: 8px !important;
+}
+
+/* Focus states without affecting positioning */
+.w-md-editor-text-container .w-md-editor-text-input:focus,
+.w-md-editor-text-container .w-md-editor-text-textarea:focus,
+.w-md-editor-text-container .w-md-editor-text:focus {
+  cursor: text !important;
+  outline: none !important;
+  border: none !important;
+}
+
+/* Dark mode text area styling - FIXED POSITIONING */
+.dark .w-md-editor-text-container,
+.dark .w-md-editor-text-container .w-md-editor-text,
+.dark .w-md-editor-text-container .w-md-editor-text-input,
+.dark .w-md-editor-text-container .w-md-editor-text-textarea {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+  cursor: text !important;
+  position: relative !important;
+  transform: none !important;
+}
+
+/* Remove prose styling from editor that might cause conflicts */
+.w-md-editor-text-container {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+}
+
+.w-md-editor-text-container * {
+  font-family: inherit !important;
+  line-height: 1.5 !important;
+}
+
+/* Ensure proper text selection in dark mode */
+.dark .w-md-editor-text-container .w-md-editor-text::selection,
+.dark .w-md-editor-text-container .w-md-editor-text-input::selection,
+.dark .w-md-editor-text-container .w-md-editor-text-textarea::selection {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Preview pane content styling */
+.dark .w-md-editor-preview h1,
+.dark .w-md-editor-preview h2,
+.dark .w-md-editor-preview h3,
+.dark .w-md-editor-preview h4,
+.dark .w-md-editor-preview h5,
+.dark .w-md-editor-preview h6 {
+  color: #f9fafb !important;
+}
+
+.dark .w-md-editor-preview p,
+.dark .w-md-editor-preview li,
+.dark .w-md-editor-preview td,
+.dark .w-md-editor-preview th {
+  color: #e5e7eb !important;
+}
+
+.dark .w-md-editor-preview blockquote {
+  color: #9ca3af !important;
+  border-left-color: #374151 !important;
+}
+
+.dark .w-md-editor-preview a {
+  color: #60a5fa !important;
+}
+
+.dark .w-md-editor-preview a:hover {
+  color: #93c5fd !important;
+}
+
+/* Fix border colors between panes */
+.dark .w-md-editor {
+  border-color: #374151 !important;
+}
+
+.dark .w-md-editor > .w-md-editor-text {
+  border-right-color: #374151 !important;
+}
+
+.dark .w-md-editor > .w-md-editor-preview {
+  border-left-color: #374151 !important;
+}
+
+/* Additional MDEditor fixes for consistent theming */
+/* Ensure preview inherits parent theme */
+[data-color-mode="dark"] .w-md-editor-preview {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+[data-color-mode="light"] .w-md-editor-preview {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+/* Fix for MDEditor wrapper to ensure proper theming */
+.dark [data-color-mode] .w-md-editor-preview,
+.dark .w-md-editor[data-color-mode] .w-md-editor-preview {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+/* Ensure text area has proper cursor and selection - NO POSITIONING CONFLICTS */
+.w-md-editor-text-container textarea {
+  cursor: text !important;
+  caret-color: currentColor !important;
+  position: relative !important;
+  z-index: 1 !important;
+  background: transparent !important;
+}
+
+.dark .w-md-editor-text-container textarea {
+  caret-color: #f9fafb !important;
+  color: #f9fafb !important;
+}
+
+/* Fix scrollbar in dark mode for editor */
+.dark .w-md-editor-text-container::-webkit-scrollbar,
+.dark .w-md-editor-preview::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark .w-md-editor-text-container::-webkit-scrollbar-track,
+.dark .w-md-editor-preview::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark .w-md-editor-text-container::-webkit-scrollbar-thumb,
+.dark .w-md-editor-preview::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 4px;
+}
+
+/* Ensure proper focus states */
+.w-md-editor-focus .w-md-editor-text-container,
+.w-md-editor-focus .w-md-editor-preview {
+  border-color: #3b82f6 !important;
+}
+
+.dark .w-md-editor-focus .w-md-editor-text-container,
+.dark .w-md-editor-focus .w-md-editor-preview {
+  border-color: #60a5fa !important;
+}
+
+/* Apply prose styling only to preview pane, not editor */
+.w-md-editor-preview {
+  font-family: system-ui, -apple-system, sans-serif !important;
+  line-height: 1.6 !important;
+  color: inherit !important;
+}
+
+/* Light mode preview prose styling */
+.w-md-editor-preview {
+  max-width: none !important;
+}
+
+.w-md-editor-preview h1,
+.w-md-editor-preview h2,
+.w-md-editor-preview h3,
+.w-md-editor-preview h4,
+.w-md-editor-preview h5,
+.w-md-editor-preview h6 {
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.w-md-editor-preview p {
+  margin-bottom: 0.75rem !important;
+}
+
+.w-md-editor-preview ul,
+.w-md-editor-preview ol {
+  padding-left: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.w-md-editor-preview blockquote {
+  border-left: 4px solid #e5e7eb !important;
+  padding-left: 1rem !important;
+  margin: 0.75rem 0 !important;
+  font-style: italic !important;
+}
+
+/* Ensure editor text area doesn't inherit prose styles */
+.w-md-editor-text-container {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+/* Fix for proper text positioning in editor */
+.w-md-editor-text-container .w-md-editor-text,
+.w-md-editor-text-container .w-md-editor-text-input,
+.w-md-editor-text-container .w-md-editor-text-textarea {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  vertical-align: top !important;
+}
+
+/* Critical fix for cursor positioning */
+.w-md-editor-text {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.w-md-editor-text-input,
+.w-md-editor-text-textarea {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  resize: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Force theme synchronization - CRITICAL */
+[data-color-mode="dark"] .w-md-editor,
+[data-color-mode="dark"] .w-md-editor-text-container,
+[data-color-mode="dark"] .w-md-editor-text,
+[data-color-mode="dark"] .w-md-editor-preview {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+[data-color-mode="light"] .w-md-editor,
+[data-color-mode="light"] .w-md-editor-text-container,
+[data-color-mode="light"] .w-md-editor-text,
+[data-color-mode="light"] .w-md-editor-preview {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: #d1d5db !important;
+}
+
+/* Force preview pane theme consistency */
+[data-color-mode="dark"] .w-md-editor-preview pre {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
+
+[data-color-mode="light"] .w-md-editor-preview pre {
+  background-color: #f8f9fa !important;
+  color: #1f2937 !important;
+}
+
+[data-color-mode="dark"] .w-md-editor-preview code:not(pre code) {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+[data-color-mode="light"] .w-md-editor-preview code:not(pre code) {
+  background-color: #e5e7eb !important;
+  color: #1f2937 !important;
+}
+
+/* Force toolbar theme */
+[data-color-mode="dark"] .w-md-editor-toolbar {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+}
+
+[data-color-mode="light"] .w-md-editor-toolbar {
+  background-color: #f8f9fa !important;
+  border-color: #d1d5db !important;
+}
+
+[data-color-mode="dark"] .w-md-editor-toolbar ul > li button {
+  color: #d1d5db !important;
+}
+
+[data-color-mode="light"] .w-md-editor-toolbar ul > li button {
+  color: #374151 !important;
+}

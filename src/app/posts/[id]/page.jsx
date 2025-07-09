@@ -77,11 +77,11 @@ export default function PostDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Error</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
             <Link href="/posts">
               <Button>
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -99,7 +99,7 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="mb-6">

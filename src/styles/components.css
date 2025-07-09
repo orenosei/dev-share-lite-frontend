@@ -1,0 +1,52 @@
+/* Search, modal, and UI component specific styles */
+
+/* Search suggestions dropdown styling */
+.search-suggestion-item:hover {
+  background-color: rgb(249 250 251);
+}
+
+.search-suggestion-item.active {
+  background-color: rgb(243 244 246);
+}
+
+/* Advanced search modal styling */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Calendar component styles */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #0ea5e9;
+  --rdp-background-color: #e0f2fe;
+  margin: 1em;
+}
+
+/* Ensure proper z-index for overlays */
+.modal-overlay {
+  z-index: 50;
+}
+
+.popover-content {
+  z-index: 60;
+}
+
+/* Dark mode search suggestions */
+.dark .search-suggestion-item:hover {
+  background-color: rgb(55 65 81);
+}
+
+.dark .search-suggestion-item.active {
+  background-color: rgb(75 85 99);
+}
+
+/* Dark mode modal backdrop */
+.dark .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Dark mode calendar styles */
+.dark .rdp {
+  --rdp-accent-color: #3b82f6;
+  --rdp-background-color: #1e40af;
+}

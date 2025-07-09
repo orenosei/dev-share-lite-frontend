@@ -202,7 +202,7 @@ export default function AdvancedSearchModal({
             
             {/* Search Suggestions */}
             {suggestions.length > 0 && (
-              <div className="border rounded-md bg-white shadow-sm">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 shadow-sm">
                 <div className="p-2 border-b text-xs font-medium text-gray-500 flex items-center gap-2">
                   <TrendingUp className="h-3 w-3" />
                   Suggestions

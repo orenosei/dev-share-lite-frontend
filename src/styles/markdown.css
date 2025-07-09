@@ -1,0 +1,70 @@
+/* Essential markdown styles and prose typography */
+
+/* Base prose styles */
+.prose {
+  color: inherit;
+}
+
+.prose code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: inherit;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Ensure prose content inherits text color from parent */
+.prose p,
+.prose li,
+.prose blockquote {
+  color: inherit;
+}
+
+/* Dark mode markdown fixes */
+.dark .prose code {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: inherit;
+}
+
+.dark .prose pre {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: inherit;
+}
+
+.dark .prose pre code {
+  background-color: transparent;
+  color: inherit;
+}
+
+.dark .prose p,
+.dark .prose li, 
+.dark .prose blockquote {
+  color: inherit;
+}
+
+/* Ensure code blocks have proper contrast */
+.dark .prose pre {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border: 1px solid #374151 !important;
+}
+
+.dark .prose code:not(pre code) {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+  border: 1px solid #4b5563 !important;
+}

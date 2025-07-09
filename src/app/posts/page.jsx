@@ -158,7 +158,7 @@ export default function PostsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Posts</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Posts</h1>
         {isAuthenticated && (
           <Link href="/posts/new">
             <Button>
@@ -170,7 +170,7 @@ export default function PostsPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
         {/* Main Search */}
         <div className="mb-6">
           <div className="flex gap-3 mb-4">
@@ -199,7 +199,7 @@ export default function PostsPage() {
 
         {/* Active Filters Display */}
         {(selectedTag || searchTerm || Object.keys(advancedFilters).some(key => advancedFilters[key] && (Array.isArray(advancedFilters[key]) ? advancedFilters[key].length > 0 : true))) && (
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Filter className="h-4 w-4 text-gray-600" />
               <span className="text-sm font-medium text-gray-700">Active Filters:</span>

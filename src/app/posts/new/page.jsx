@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { MarkdownEditor } from '../../../components/MarkdownEditor';
+import { MarkdownContent } from '../../../components/MarkdownContent';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -263,9 +264,9 @@ function NewPostPage() {
           
           {/* Tag Browser */}
           {showTagBrowser && isEditing && (
-            <div className="border border-gray-200 rounded-md p-4 bg-gray-50">
+            <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-800">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-medium text-gray-900">Available Tags</h3>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">Available Tags</h3>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -352,13 +353,10 @@ function NewPostPage() {
               preview="live"
             />
           ) : (
-            <div className="border border-gray-300 rounded-md p-4 min-h-[500px]">
-              <MarkdownEditor
-                value={postData.content}
-                height={500}
-                preview="preview"
-                hideToolbar={true}
-              />
+            <div className="border border-gray-300 dark:border-gray-600 rounded-md p-4 min-h-[500px] bg-white dark:bg-gray-800">
+              <div className="prose dark:prose-invert max-w-none">
+                <MarkdownContent content={postData.content} />
+              </div>
             </div>
           )}
           {errors.content && (

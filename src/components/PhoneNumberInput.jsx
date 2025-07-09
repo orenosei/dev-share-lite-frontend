@@ -30,11 +30,24 @@ const PhoneNumberInput = ({ value, onChange, className, placeholder, ...props })
           width: 100%;
           outline: none;
           transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+          background: white;
+          color: #111827;
+        }
+        
+        .dark .phone-input .PhoneInputInput {
+          border-color: #4b5563;
+          background: #374151;
+          color: #f9fafb;
         }
         
         .phone-input .PhoneInputInput:focus {
           border-color: #6366f1;
           box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .dark .phone-input .PhoneInputInput:focus {
+          border-color: #818cf8;
+          box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
         }
         
         .phone-input .PhoneInputCountrySelect {
@@ -43,12 +56,24 @@ const PhoneNumberInput = ({ value, onChange, className, placeholder, ...props })
           margin-right: 0.5rem;
           padding: 0.5rem;
           background: white;
+          color: #111827;
+        }
+        
+        .dark .phone-input .PhoneInputCountrySelect {
+          border-color: #4b5563;
+          background: #374151;
+          color: #f9fafb;
         }
         
         .phone-input .PhoneInputCountrySelect:focus {
           border-color: #6366f1;
           outline: none;
           box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .dark .phone-input .PhoneInputCountrySelect:focus {
+          border-color: #818cf8;
+          box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
         }
         
         .phone-input {

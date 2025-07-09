@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { MarkdownEditor } from '../../../components/MarkdownEditor';
+import { MarkdownContent } from '../../../components/MarkdownContent';
 import PhoneNumberInput from '../../../components/PhoneNumberInput';
 import CountrySelect from '../../../components/CountrySelect';
 import { Button } from '../../../components/ui/button';
@@ -253,13 +254,13 @@ export default function UserProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
           </div>
         </div>
       </div>
@@ -268,11 +269,11 @@ export default function UserProfilePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Error</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
             <Link href="/posts">
               <Button>Back to Posts</Button>
             </Link>
@@ -292,10 +293,10 @@ export default function UserProfilePage() {
   const draftPosts = userPosts.filter(post => post.status === 'DRAFT');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto p-6">
         {/* Profile Header */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
               {isEditing ? (
@@ -311,7 +312,7 @@ export default function UserProfilePage() {
                         className={errors.firstName ? 'border-red-500' : ''}
                       />
                       {errors.firstName && (
-                        <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+                        <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.firstName}</p>
                       )}
                     </div>
                     
@@ -325,7 +326,7 @@ export default function UserProfilePage() {
                         className={errors.lastName ? 'border-red-500' : ''}
                       />
                       {errors.lastName && (
-                        <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+                        <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.lastName}</p>
                       )}
                     </div>
                   </div>
@@ -340,7 +341,7 @@ export default function UserProfilePage() {
                       className={errors.email ? 'border-red-500' : ''}
                     />
                     {errors.email && (
-                      <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                      <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email}</p>
                     )}
                   </div>
                   
@@ -352,7 +353,7 @@ export default function UserProfilePage() {
                       placeholder="Enter your phone number"
                       className="mt-1"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       International format with country code
                     </p>
                   </div>
@@ -405,21 +406,21 @@ export default function UserProfilePage() {
                         onChange={(value) => setEditForm({ ...editForm, bio: value || '' })}
                         preview="live"
                         hideToolbar={false}
-                        data-color-mode="light"
+                        data-color-mode="auto"
                         placeholder="Tell us about yourself using Markdown..."
                       />
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       You can use Markdown formatting in your bio
                     </p>
                   </div>
                   
                   {errors.submit && (
-                    <div className="text-red-500 text-sm">{errors.submit}</div>
+                    <div className="text-red-500 dark:text-red-400 text-sm">{errors.submit}</div>
                   )}
                   
                   {/* Action Buttons */}
-                  <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
                     <Button 
                       variant="outline"
                       onClick={handleCancel}
@@ -449,14 +450,14 @@ export default function UserProfilePage() {
                       />
                     )}
                     <div>
-                      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                         {getUserFullName(user)}
                       </h1>
-                      <div className="text-sm text-gray-500">@{user.username}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600 dark:text-gray-300 mb-4">
                     <div className="flex items-center">
                       <Mail className="w-4 h-4 mr-2" />
                       {user.email}
@@ -480,13 +481,8 @@ export default function UserProfilePage() {
                   </div>
                   
                   {user.bio && (
-                    <div className="prose prose-sm max-w-none mb-4">
-                      <MarkdownEditor
-                        value={user.bio}
-                        preview="preview"
-                        hideToolbar
-                        data-color-mode="light"
-                      />
+                    <div className="prose dark:prose-invert prose-sm max-w-none mb-4">
+                      <MarkdownContent content={user.bio} />
                     </div>
                   )}
                 </div>
@@ -495,35 +491,35 @@ export default function UserProfilePage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-600">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {isOwnProfile ? pagination.total : publishedPosts.length}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 {isOwnProfile ? 'Total Posts' : 'Posts'}
               </div>
               {isOwnProfile && draftPosts.length > 0 && (
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {publishedPosts.length} published, {draftPosts.length} draft
                 </div>
               )}
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{totalLikes}</div>
-              <div className="text-sm text-gray-600">Total Likes</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalLikes}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Likes</div>
             </div>
             <div className="text-center pb-4">
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {userPosts.reduce((sum, post) => sum + (post._count?.comments || 0), 0)}
               </div>
-              <div className="text-sm text-gray-600">Total Comments</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Comments</div>
             </div>
           </div>
           
           {/* Edit Profile Button */}
           {isOwnProfile && !isEditing && (
-            <div className="flex justify-end pt-4 border-t">
+            <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-600">
               <Button 
                 variant="outline"
                 onClick={() => setIsEditing(true)}
@@ -536,12 +532,12 @@ export default function UserProfilePage() {
         </div>
 
         {/* User Posts */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
             <FileText className="w-5 h-5 mr-2" />
             Posts ({isOwnProfile ? pagination.total : publishedPosts.length})
             {isOwnProfile && draftPosts.length > 0 && (
-              <span className="ml-2 text-sm text-gray-500">
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
                 ({publishedPosts.length} published, {draftPosts.length} draft)
               </span>
             )}
@@ -549,7 +545,7 @@ export default function UserProfilePage() {
 
           {userPosts.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
                 {isOwnProfile ? "You haven't posted anything yet." : "This user hasn't posted anything yet."}
               </p>
               {isOwnProfile && (
@@ -564,10 +560,10 @@ export default function UserProfilePage() {
                 <div key={post.id} className="border rounded-lg">
                   {/* Status and Actions Header for own posts */}
                   {isOwnProfile && (
-                    <div className="flex justify-between items-center p-3 border-b bg-gray-50">
+                    <div className="flex justify-between items-center p-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
                       <Badge 
                         variant={post.status === 'PUBLISHED' ? 'default' : 'secondary'}
-                        className={post.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
+                        className={post.status === 'PUBLISHED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'}
                       >
                         {post.status}
                       </Badge>
@@ -582,7 +578,7 @@ export default function UserProfilePage() {
                           variant="outline" 
                           size="sm"
                           onClick={() => handleDeletePost(post.id)}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                         >
                           <X className="w-4 h-4 mr-1" />
                           Delete
@@ -665,7 +661,7 @@ export default function UserProfilePage() {
 
           {/* Posts Info */}
           {userPosts.length > 0 && (
-            <div className="text-center mt-4 text-sm text-gray-600">
+            <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
               Showing {userPosts.length} of {pagination.total} posts
             </div>
           )}

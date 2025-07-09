@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
+import { MarkdownContent } from '../../../../components/MarkdownContent';
 import { 
   Edit, 
   Trash2, 
@@ -14,12 +15,6 @@ import {
   User
 } from 'lucide-react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-
-const MarkdownPreview = dynamic(
-  () => import('@uiw/react-markdown-preview'),
-  { ssr: false }
-);
 
 export default function PostContent({ post, onPostUpdate }) {
   const router = useRouter();
@@ -116,15 +111,15 @@ export default function PostContent({ post, onPostUpdate }) {
   const isAuthor = isAuthenticated && user && post.userId === user.id;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
       {/* Post Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{post.title}</h1>
-          <div className="flex items-center text-sm text-gray-500 space-x-4">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{post.title}</h1>
+          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-4">
             <Link 
               href={`/user/${post.userId}`}
-              className="flex items-center hover:text-blue-600 transition-colors"
+              className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               <User className="w-4 h-4 mr-1" />
               {post.user?.firstName && post.user?.lastName 
@@ -165,7 +160,7 @@ export default function PostContent({ post, onPostUpdate }) {
         <div className="flex flex-wrap gap-2 mb-4">
           {post.tags.map((tag, index) => (
             <Link key={index} href={`/posts?tag=${encodeURIComponent(tag.name || tag)}`}>
-              <Badge variant="secondary" className="cursor-pointer hover:bg-indigo-100 transition-colors">
+              <Badge variant="secondary" className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-800 transition-colors">
                 {tag.name || tag}
               </Badge>
             </Link>
@@ -174,18 +169,20 @@ export default function PostContent({ post, onPostUpdate }) {
       )}
 
       {/* Post Content */}
-      <div className="prose max-w-none mb-6">
-        <MarkdownPreview source={post.content} />
+      <div className="mb-6">
+        <MarkdownContent 
+          content={post.content}
+        />
       </div>
 
       {/* Post Stats & Actions */}
-      <div className="flex items-center justify-between pt-4 border-t">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center text-gray-600">
+          <div className="flex items-center text-gray-600 dark:text-gray-400">
             <Heart className="w-5 h-5 mr-1" />
             {likeCount} likes
           </div>
-          <div className="flex items-center text-gray-600">
+          <div className="flex items-center text-gray-600 dark:text-gray-400">
             <MessageCircle className="w-5 h-5 mr-1" />
             {post._count?.comments || 0} comments
           </div>

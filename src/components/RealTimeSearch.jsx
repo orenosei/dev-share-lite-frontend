@@ -236,7 +236,7 @@ export default function RealTimeSearch({
 
       {/* Suggestions Dropdown */}
       {showSuggestions && (searchTerm.length >= 2 || recentSearches.length > 0) && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
           {isLoading && (
             <div className="p-3 text-center text-gray-500">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mx-auto mb-2"></div>
