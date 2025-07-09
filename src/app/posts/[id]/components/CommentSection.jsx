@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { commentsService } from '../../../../services';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { MarkdownEditor } from '../../../../components/MarkdownEditor';
@@ -96,15 +97,15 @@ export default function CommentSection({ postId, initialComments = [] }) {
   const fetchComments = async () => {
     setIsLoadingComments(true);
     setCommentError('');
+    
     try {
-      const response = await fetch(`http://localhost:4000/comments/post/${postId}`);
+      const result = await commentsService.getCommentsByPost(postId);
       
-      if (response.ok) {
-        const data = await response.json();
-        setComments(Array.isArray(data) ? data : []);
+      if (result.success) {
+        setComments(result.data);
       } else {
-        console.error('Error fetching comments');
-        setCommentError('Failed to load comments');
+        console.error('Error fetching comments:', result.error);
+        setCommentError(result.error);
         setComments([]);
       }
     } catch (err) {
@@ -136,26 +137,18 @@ export default function CommentSection({ postId, initialComments = [] }) {
     setCommentError('');
 
     try {
-      const response = await fetch('http://localhost:4000/comments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({
-          content: newComment,
-          postId: parseInt(postId),
-          userId: user.id,
-          parentId: null // Top-level comment
-        }),
+      const result = await commentsService.createComment({
+        content: newComment,
+        postId: parseInt(postId),
+        userId: user.id,
+        parentId: null // Top-level comment
       });
 
-      if (response.ok) {
+      if (result.success) {
         setNewComment('');
         fetchComments(); // Refresh comments
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        setCommentError(errorData.message || 'Failed to post comment');
+        setCommentError(result.error);
       }
     } catch (err) {
       console.error('Error posting comment:', err);
@@ -185,27 +178,19 @@ export default function CommentSection({ postId, initialComments = [] }) {
     setCommentError('');
 
     try {
-      const response = await fetch('http://localhost:4000/comments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({
-          content: replyText,
-          postId: parseInt(postId),
-          userId: user.id,
-          parentId: parentCommentId
-        }),
+      const result = await commentsService.createComment({
+        content: replyText,
+        postId: parseInt(postId),
+        userId: user.id,
+        parentId: parentCommentId
       });
 
-      if (response.ok) {
+      if (result.success) {
         setReplyText('');
         setReplyingTo(null);
         fetchComments(); // Refresh comments
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        setCommentError(errorData.message || 'Failed to post reply');
+        setCommentError(result.error);
       }
     } catch (err) {
       console.error('Error posting reply:', err);
@@ -229,16 +214,9 @@ export default function CommentSection({ postId, initialComments = [] }) {
     setLikingComments(prev => new Set(prev).add(commentId));
 
     try {
-      const response = await fetch(`http://localhost:4000/comments/${commentId}/like`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify({ userId: user.id }),
-      });
+      const result = await commentsService.likeComment(commentId, user.id);
 
-      if (response.ok) {
+      if (result.success) {
         // Update comments state to reflect the like/unlike
         setComments(prevComments => 
           prevComments.map(comment => {
@@ -283,7 +261,7 @@ export default function CommentSection({ postId, initialComments = [] }) {
           })
         );
       } else {
-        console.error('Error liking comment');
+        console.error('Error liking comment:', result.error);
       }
     } catch (err) {
       console.error('Error liking comment:', err);
@@ -306,17 +284,12 @@ export default function CommentSection({ postId, initialComments = [] }) {
     setDeletingComments(prev => new Set(prev).add(commentId));
 
     try {
-      const response = await fetch(`http://localhost:4000/comments/${commentId}?userId=${user.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${user?.token}`,
-        },
-      });
+      const result = await commentsService.deleteComment(commentId, user.id);
 
-      if (response.ok) {
+      if (result.success) {
         fetchComments(); // Refresh comments
       } else {
-        console.error('Error deleting comment');
+        console.error('Error deleting comment:', result.error);
         alert('Failed to delete comment');
       }
     } catch (err) {

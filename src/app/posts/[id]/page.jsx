@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '../../../components/ui/button';
+import { commentsService } from '../../../services';
 import PostContent from './components/PostContent';
 import CommentSection from './components/CommentSection';
 import { ArrowLeft } from 'lucide-react';
@@ -45,13 +46,12 @@ export default function PostDetailPage() {
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/comments/post/${params.id}`);
+      const result = await commentsService.getCommentsByPost(params.id);
       
-      if (response.ok) {
-        const data = await response.json();
-        setComments(Array.isArray(data) ? data : []);
+      if (result.success) {
+        setComments(result.data);
       } else {
-        console.error('Error fetching comments');
+        console.error('Error fetching comments:', result.error);
         setComments([]);
       }
     } catch (err) {
