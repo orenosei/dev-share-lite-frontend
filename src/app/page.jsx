@@ -110,7 +110,7 @@ export default function Home() {
             {isAuthenticated ? (
               <div className="mt-8">
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Welcome back, {user.name || user.email}! 👋
+                  Welcome back, {user.firstName}! 👋
                 </h2>
                 <div className="max-w-lg mx-auto">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

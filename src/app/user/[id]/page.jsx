@@ -21,7 +21,8 @@ import {
   X,
   FileText,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Filter
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -40,6 +41,15 @@ export default function UserProfilePage() {
     limit: 5,
     total: 0,
     totalPages: 0
+  });
+  
+  const [postFilter, setPostFilter] = useState('all'); // 'all', 'published', 'draft'
+  
+  // Track total counts for statistics
+  const [postCounts, setPostCounts] = useState({
+    total: 0,
+    published: 0,
+    draft: 0
   });
   
   const [editForm, setEditForm] = useState({
@@ -67,8 +77,9 @@ export default function UserProfilePage() {
     // Fetch posts after user data is loaded to determine if it's own profile
     if (params.id && user) {
       fetchUserPosts();
+      fetchPostCounts();
     }
-  }, [params.id, user, currentUser, pagination.page]);
+  }, [params.id, user, currentUser, pagination.page, postFilter]);
 
   const fetchUser = async () => {
     try {
@@ -105,11 +116,19 @@ export default function UserProfilePage() {
   const fetchUserPosts = async () => {
     try {
       const currentIsOwnProfile = isAuthenticated && currentUser && user && user.id === currentUser.id;
-      // If it's own profile, get all posts (DRAFT + PUBLISHED)
-      // If it's other profile, only get PUBLISHED posts
       let url = `http://localhost:4000/posts/user/${params.id}?page=${pagination.page}&limit=${pagination.limit}`;
+      
       if (!currentIsOwnProfile) {
+        // For other users' profiles, only show published posts
         url += '&status=PUBLISHED';
+      } else {
+        // For own profile, apply the selected filter
+        if (postFilter === 'published') {
+          url += '&status=PUBLISHED';
+        } else if (postFilter === 'draft') {
+          url += '&status=DRAFT';
+        }
+        // For 'all', don't add status filter - show both DRAFT and PUBLISHED
       }
       
       const response = await fetch(url);
@@ -135,6 +154,46 @@ export default function UserProfilePage() {
     } catch (err) {
       console.error('Error fetching user posts:', err);
       setUserPosts([]);
+    }
+  };
+
+  const fetchPostCounts = async () => {
+    try {
+      const currentIsOwnProfile = isAuthenticated && currentUser && user && user.id === currentUser.id;
+      
+      if (currentIsOwnProfile) {
+        // For own profile, get counts for all statuses
+        const [allResponse, publishedResponse, draftResponse] = await Promise.all([
+          fetch(`http://localhost:4000/posts/user/${params.id}?page=1&limit=1`),
+          fetch(`http://localhost:4000/posts/user/${params.id}?page=1&limit=1&status=PUBLISHED`),
+          fetch(`http://localhost:4000/posts/user/${params.id}?page=1&limit=1&status=DRAFT`)
+        ]);
+
+        const [allData, publishedData, draftData] = await Promise.all([
+          allResponse.json(),
+          publishedResponse.json(),
+          draftResponse.json()
+        ]);
+
+        setPostCounts({
+          total: allData?.pagination?.total || 0,
+          published: publishedData?.pagination?.total || 0,
+          draft: draftData?.pagination?.total || 0
+        });
+      } else {
+        // For other profiles, only get published count
+        const response = await fetch(`http://localhost:4000/posts/user/${params.id}?page=1&limit=1&status=PUBLISHED`);
+        const data = await response.json();
+        
+        setPostCounts({
+          total: data?.pagination?.total || 0,
+          published: data?.pagination?.total || 0,
+          draft: 0
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching post counts:', err);
+      setPostCounts({ total: 0, published: 0, draft: 0 });
     }
   };
 
@@ -494,14 +553,14 @@ export default function UserProfilePage() {
           <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-600">
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {isOwnProfile ? pagination.total : publishedPosts.length}
+                {isOwnProfile ? postCounts.total : postCounts.published}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300">
                 {isOwnProfile ? 'Total Posts' : 'Posts'}
               </div>
-              {isOwnProfile && draftPosts.length > 0 && (
+              {isOwnProfile && postCounts.draft > 0 && (
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {publishedPosts.length} published, {draftPosts.length} draft
+                  {postCounts.published} published, {postCounts.draft} draft
                 </div>
               )}
             </div>
@@ -535,13 +594,36 @@ export default function UserProfilePage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
             <FileText className="w-5 h-5 mr-2" />
-            Posts ({isOwnProfile ? pagination.total : publishedPosts.length})
-            {isOwnProfile && draftPosts.length > 0 && (
+            Posts ({isOwnProfile ? postCounts.total : postCounts.published})
+            {isOwnProfile && postCounts.draft > 0 && (
               <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                ({publishedPosts.length} published, {draftPosts.length} draft)
+                ({postCounts.published} published, {postCounts.draft} draft)
               </span>
             )}
           </h2>
+
+          {/* Post Filter */}
+          {isOwnProfile && (
+            <div className="mb-4 flex items-center gap-3">
+              <Filter className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <Label htmlFor="postFilter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Filter Posts:
+              </Label>
+              <select
+                id="postFilter"
+                value={postFilter}
+                onChange={(e) => {
+                  setPostFilter(e.target.value);
+                  setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page on filter change
+                }}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
+              >
+                <option value="all">All Posts</option>
+                <option value="published">Published Only</option>
+                <option value="draft">Draft Only</option>
+              </select>
+            </div>
+          )}
 
           {userPosts.length === 0 ? (
             <div className="text-center py-8">
@@ -662,7 +744,7 @@ export default function UserProfilePage() {
           {/* Posts Info */}
           {userPosts.length > 0 && (
             <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
-              Showing {userPosts.length} of {pagination.total} posts
+              Showing {userPosts.length} of {pagination.total} {postFilter === 'all' ? 'posts' : `${postFilter} posts`}
             </div>
           )}
         </div>
