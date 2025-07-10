@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks';
 import PhoneNumberInput from '../../components/PhoneNumberInput';
 import CountrySelect from '../../components/CountrySelect';
 

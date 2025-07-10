@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks';
 import { statsService, postsService } from '../services';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';

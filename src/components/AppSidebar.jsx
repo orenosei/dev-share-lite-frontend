@@ -28,7 +28,7 @@ import {
   Calendar
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks";
 import { statsService } from "@/services";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";

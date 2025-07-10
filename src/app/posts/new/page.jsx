@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../hooks';
 import { postsService } from '../../../services';
 import { MarkdownEditor } from '../../../components/MarkdownEditor';
 import { MarkdownContent } from '../../../components/MarkdownContent';

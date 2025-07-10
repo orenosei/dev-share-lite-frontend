@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../hooks';
+import { useTheme } from '../hooks';
 import { useRouter } from 'next/navigation';
 import { Sun, Moon, User, Settings, LogOut } from 'lucide-react';
 import {

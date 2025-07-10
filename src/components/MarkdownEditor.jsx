@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import { cn } from '../lib/utils';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../hooks';
 
 const MarkdownEditor = React.forwardRef(({ 
   value, 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks';
 import { postsService } from '../../services';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';

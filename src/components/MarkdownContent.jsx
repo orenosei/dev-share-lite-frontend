@@ -3,7 +3,7 @@
 import React from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import { cn } from '../lib/utils';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../hooks';
 
 const MarkdownContent = ({ content, className, ...props }) => {
   const { theme } = useTheme();
