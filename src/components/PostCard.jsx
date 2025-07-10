@@ -4,6 +4,7 @@ import { Badge } from './ui/badge';
 import { Heart, MessageCircle, Calendar, User, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { MarkdownContent } from './MarkdownContent';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
 
 export default function PostCard({ post, onTagClick, className = '', variant = 'default', showPopularityScore = false }) {
   const formatDate = (dateString) => {
@@ -76,21 +77,23 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
               </span>
             )}
           </div>
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-            <div className="flex items-center space-x-3">
-              <span className="flex items-center bg-gray-100/70 dark:bg-gray-700/50 px-2 py-1 rounded-full">
-                <User className="w-3 h-3 mr-1" />
-                {post.user?.firstName && post.user?.lastName 
-                  ? `${post.user.firstName} ${post.user.lastName}`
-                  : post.user?.username || post.user?.email || 'Anonymous'
-                }
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 gap-2">
+            <div className="flex items-center space-x-2 min-w-0 flex-1">
+              <span className="flex items-center bg-gray-100/70 dark:bg-gray-700/50 px-2 py-1 rounded-full truncate">
+                <User className="w-3 h-3 mr-1 flex-shrink-0" />
+                <span className="truncate">
+                  {post.user?.firstName && post.user?.lastName 
+                    ? `${post.user.firstName} ${post.user.lastName}`
+                    : post.user?.username || post.user?.email || 'Anonymous'
+                  }
+                </span>
               </span>
-              <span className="flex items-center">
+              <span className="flex items-center whitespace-nowrap">
                 <Calendar className="w-3 h-3 mr-1" />
                 {formatDate(post.createdAt)}
               </span>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <span className="flex items-center bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full text-red-600 dark:text-red-400">
                 <Heart className="w-3 h-3 mr-1" />
                 {post._count?.likes || 0}
@@ -149,48 +152,78 @@ export default function PostCard({ post, onTagClick, className = '', variant = '
         </div>
       </div>
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t-2 border-gray-300/60 dark:border-gray-600/60">
-        <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 pt-4 border-t-2 border-gray-300/60 dark:border-gray-600/60">
+        <div className="flex items-center flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400 flex-1 min-w-0">
           <Link 
             href={`/user/${post.authorId || post.userId}`}
-            className="flex items-center hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors bg-gray-200/80 dark:bg-gray-700/70 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md"
+            className="flex items-center hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors bg-gray-200/80 dark:bg-gray-700/70 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md whitespace-nowrap"
           >
-            <User className="h-4 w-4 mr-2" />
-            {post.user?.firstName && post.user?.lastName 
-              ? `${post.user.firstName} ${post.user.lastName}`
-              : post.user?.username || post.user?.email || 'Anonymous'
-            }
+            <User className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="truncate max-w-[100px]">
+              {post.user?.firstName && post.user?.lastName 
+                ? `${post.user.firstName} ${post.user.lastName}`
+                : post.user?.username || post.user?.email || 'Anonymous'
+              }
+            </span>
           </Link>
-          <div className="flex items-center bg-gray-200/80 dark:bg-gray-700/70 px-3 py-1.5 rounded-full shadow-sm">
+          <div className="flex items-center bg-gray-200/80 dark:bg-gray-700/70 px-3 py-1.5 rounded-full shadow-sm whitespace-nowrap">
             <Calendar className="h-4 w-4 mr-2" />
             {formatDate(post.createdAt)}
           </div>
-          <div className="flex items-center bg-red-100 dark:bg-red-900/30 px-3 py-1.5 rounded-full text-red-600 dark:text-red-400 shadow-sm">
+          <div className="flex items-center bg-red-100 dark:bg-red-900/30 px-3 py-1.5 rounded-full text-red-600 dark:text-red-400 shadow-sm whitespace-nowrap">
             <Heart className="h-4 w-4 mr-2" />
             {post._count?.likes || 0}
           </div>
-          <div className="flex items-center bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full text-blue-600 dark:text-blue-400 shadow-sm">
+          <div className="flex items-center bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full text-blue-600 dark:text-blue-400 shadow-sm whitespace-nowrap">
             <MessageCircle className="h-4 w-4 mr-2" />
             {post._count?.comments || 0}
           </div>
         </div>
         
         {post.tags && post.tags.length > 0 && (
-          <div className="flex gap-2 flex-wrap">
-            {post.tags.slice(0, 3).map((tag, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-indigo-200/50 dark:border-indigo-700/50 text-indigo-700 dark:text-indigo-300"
-                onClick={() => onTagClick && onTagClick(tag.name || tag)}
-              >
-                #{tag.name || tag}
-              </Badge>
-            ))}
-            {post.tags.length > 3 && (
-              <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600">
-                +{post.tags.length - 3} more
-              </Badge>
+          <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
+            {post.tags.slice(0, 2).map((tag, index) => {
+              const tagName = typeof tag === 'string' ? tag : (tag?.name || tag?.id || 'Unknown');
+              return (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-indigo-200/50 dark:border-indigo-700/50 text-indigo-700 dark:text-indigo-300 text-xs whitespace-nowrap truncate max-w-[80px]"
+                  onClick={() => onTagClick && onTagClick(tagName)}
+                  title={'#' + tagName}
+                >
+                  #{tagName.length > 10 ? `${tagName.substring(0, 10)}...` : tagName}
+                </Badge>
+              );
+            })}
+            {post.tags.length > 2 && (
+              <HoverCard openDelay={200}>
+                <HoverCardTrigger asChild>
+                  <Badge 
+                    variant="outline" 
+                    className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 text-xs whitespace-nowrap cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                  >
+                    +{post.tags.length - 2}
+                  </Badge>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-auto max-w-sm">
+                  <div className="flex flex-wrap gap-1">
+                    {post.tags.slice(2).map((tag, index) => {
+                      const tagName = typeof tag === 'string' ? tag : (tag?.name || tag?.id || 'Unknown');
+                      return (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-indigo-200/50 dark:border-indigo-700/50 text-indigo-700 dark:text-indigo-300 text-xs"
+                          onClick={() => onTagClick && onTagClick(tagName)}
+                        >
+                          #{tagName}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
             )}
           </div>
         )}
