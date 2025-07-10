@@ -27,7 +27,10 @@ const MarkdownContent = ({ content, className, ...props }) => {
           padding: 0,
           margin: 0,
           fontSize: 'inherit',
-          color: 'inherit'
+          color: theme === 'dark' ? '#f9fafb' : '#1f2937',
+          '--color-canvas-default': theme === 'dark' ? '#1f2937' : '#ffffff',
+          '--color-canvas-subtle': theme === 'dark' ? '#374151' : '#f9fafb',
+          '--color-border-default': theme === 'dark' ? '#4b5563' : '#e5e7eb'
         }}
         data-color-mode={theme === 'dark' ? 'dark' : 'light'}
       />
