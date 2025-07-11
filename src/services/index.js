@@ -4,3 +4,4 @@ export { userService } from './userService';
 export { commentsService } from './commentsService';
 export { statsService } from './statsService';
 export { postsService } from './postsService';
+export { uploadService } from './uploadService';

@@ -7,13 +7,16 @@ import { postsService } from '../../../../services';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
 import { MarkdownContent } from '../../../../components/MarkdownContent';
+import ImageUpload from '../../../../components/ImageUpload';
+import PostImages from '../../../../components/PostImages';
 import { 
   Edit, 
   Trash2, 
   Heart, 
   MessageCircle, 
   Calendar, 
-  User
+  User,
+  Image as ImageIcon
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -23,6 +26,8 @@ export default function PostContent({ post, onPostUpdate }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
   const [isLiking, setIsLiking] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [postImages, setPostImages] = useState(post.images || []);
 
   // Check if the current user has liked this post
   useEffect(() => {
@@ -31,7 +36,8 @@ export default function PostContent({ post, onPostUpdate }) {
       setIsLiked(!!userLike);
     }
     setLikeCount(post._count?.likes || 0);
-  }, [isAuthenticated, user, post.likes, post._count?.likes]);
+    setPostImages(post.images || []);
+  }, [isAuthenticated, user, post.likes, post._count?.likes, post.images]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -98,6 +104,41 @@ export default function PostContent({ post, onPostUpdate }) {
     }
   };
 
+  const handleImagesUploaded = (uploadResult) => {
+    console.log('handleImagesUploaded called with:', uploadResult);
+    
+    if (uploadResult && uploadResult.data && uploadResult.data.images) {
+      const newImages = uploadResult.data.images;
+      console.log('Adding new images:', newImages);
+      setPostImages(prev => [...prev, ...newImages]);
+      setShowImageUpload(false);
+      
+      // Refresh post data from parent to get updated data
+      if (onPostUpdate) {
+        onPostUpdate();
+      }
+    } else if (uploadResult && uploadResult.images) {
+      // Direct response format
+      const newImages = uploadResult.images;
+      console.log('Adding new images (direct):', newImages);
+      setPostImages(prev => [...prev, ...newImages]);
+      setShowImageUpload(false);
+      
+      if (onPostUpdate) {
+        onPostUpdate();
+      }
+    }
+  };
+
+  const handleImageDeleted = (imageId) => {
+    setPostImages(prev => prev.filter(img => img.id !== imageId));
+    
+    // Refresh post data from parent to get updated data
+    if (onPostUpdate) {
+      onPostUpdate();
+    }
+  };
+
   const isAuthor = isAuthenticated && user && post.userId === user.id;
 
   return (
@@ -126,6 +167,15 @@ export default function PostContent({ post, onPostUpdate }) {
         
         {isAuthor && (
           <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowImageUpload(!showImageUpload)}
+              className="flex items-center"
+            >
+              <ImageIcon className="w-4 h-4 mr-1" />
+              {showImageUpload ? 'Cancel Upload' : 'Add Images'}
+            </Button>
             <Link href={`/posts/${post.id}/edit`}>
               <Button variant="outline" size="sm">
                 <Edit className="w-4 h-4 mr-1" />
@@ -155,6 +205,30 @@ export default function PostContent({ post, onPostUpdate }) {
               </Badge>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Image Upload Section (for authors) */}
+      {isAuthor && showImageUpload && (
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upload Images</h3>
+          <ImageUpload
+            postId={post.id}
+            onImagesUploaded={handleImagesUploaded}
+            onImageDeleted={handleImageDeleted}
+          />
+        </div>
+      )}
+
+      {/* Post Images */}
+      {postImages && postImages.length > 0 && (
+        <div className="mb-6">
+          <PostImages
+            images={postImages}
+            isAuthor={isAuthor}
+            postId={post.id}
+            onImageDeleted={handleImageDeleted}
+          />
         </div>
       )}
 

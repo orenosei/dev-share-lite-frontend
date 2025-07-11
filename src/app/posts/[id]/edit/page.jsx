@@ -6,11 +6,13 @@ import { useAuth } from '../../../../hooks';
 import { postsService } from '../../../../services';
 import { MarkdownEditor } from '../../../../components/MarkdownEditor';
 import { MarkdownContent } from '../../../../components/MarkdownContent';
+import ImageUpload from '../../../../components/ImageUpload';
+import PostImages from '../../../../components/PostImages';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { TagInput, Badge } from '../../../../components/ui/badge';
-import { Save, ArrowLeft, Eye, EyeOff, FileText, Tag, X, Search } from 'lucide-react';
+import { Save, ArrowLeft, Eye, EyeOff, FileText, Tag, X, Search, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 
 export default function EditPostPage() {
@@ -26,6 +28,8 @@ export default function EditPostPage() {
   const [isLoadingTags, setIsLoadingTags] = useState(false);
   const [showTagBrowser, setShowTagBrowser] = useState(false);
   const [tagSearchTerm, setTagSearchTerm] = useState('');
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [postImages, setPostImages] = useState([]);
   
   const [postData, setPostData] = useState({
     title: '',
@@ -83,6 +87,9 @@ export default function EditPostPage() {
           tags: Array.isArray(data.tags) ? data.tags.map(tag => typeof tag === 'string' ? tag : tag.name) : [],
           status: data.status || 'PUBLISHED'
         });
+        
+        // Set post images
+        setPostImages(data.images || []);
       } else {
         setError(result.error || 'Error loading post');
       }
@@ -171,6 +178,23 @@ export default function EditPostPage() {
       ...postData,
       tags: newTags
     });
+  };
+
+  const handleImagesUploaded = (uploadResult) => {
+    if (uploadResult && uploadResult.data && uploadResult.data.images) {
+      const newImages = uploadResult.data.images;
+      setPostImages(prev => [...prev, ...newImages]);
+      setShowImageUpload(false);
+    } else if (uploadResult && uploadResult.images) {
+      // Direct response format
+      const newImages = uploadResult.images;
+      setPostImages(prev => [...prev, ...newImages]);
+      setShowImageUpload(false);
+    }
+  };
+
+  const handleImageDeleted = (imageId) => {
+    setPostImages(prev => prev.filter(img => img.id !== imageId));
   };
 
   // Filter tags based on search term
@@ -412,6 +436,44 @@ export default function EditPostPage() {
                     <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.content}</p>
                   )}
                 </div>
+
+                {/* Images Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>Images</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowImageUpload(!showImageUpload)}
+                    >
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      {showImageUpload ? 'Cancel Upload' : 'Add Images'}
+                    </Button>
+                  </div>
+                  
+                  {/* Image Upload Section */}
+                  {showImageUpload && (
+                    <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <ImageUpload
+                        postId={params.id}
+                        onImagesUploaded={handleImagesUploaded}
+                        onImageDeleted={handleImageDeleted}
+                      />
+                    </div>
+                  )}
+
+                  {/* Post Images Gallery */}
+                  {postImages && postImages.length > 0 && (
+                    <div className="mt-4">
+                      <PostImages
+                        images={postImages}
+                        isAuthor={true}
+                        postId={params.id}
+                        onImageDeleted={handleImageDeleted}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -436,6 +498,18 @@ export default function EditPostPage() {
                       {postData.tags.map((tag, index) => (
                         <Badge key={index} variant="secondary">{tag}</Badge>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Images Preview */}
+                  {postImages && postImages.length > 0 && (
+                    <div>
+                      <PostImages
+                        images={postImages}
+                        isAuthor={false}
+                        postId={params.id}
+                        onImageDeleted={() => {}}
+                      />
                     </div>
                   )}
 
