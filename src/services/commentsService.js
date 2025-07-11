@@ -60,9 +60,10 @@ export const commentsService = {
   },
 
   // Update a comment
-  updateComment: async (commentId, commentData) => {
+  updateComment: async (commentId, commentData, userId = null) => {
     try {
-      const data = await apiRequest(`/comments/${commentId}`, {
+      const url = userId ? `/comments/${commentId}?userId=${userId}` : `/comments/${commentId}`;
+      const data = await apiRequest(url, {
         method: 'PATCH',
         body: JSON.stringify(commentData),
       });

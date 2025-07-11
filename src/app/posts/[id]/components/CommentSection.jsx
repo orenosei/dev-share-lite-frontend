@@ -13,7 +13,10 @@ import {
   MessageCircle, 
   Send,
   Reply,
-  Trash2
+  Trash2,
+  Edit3,
+  Save,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -28,6 +31,9 @@ export default function CommentSection({ postId, initialComments = [] }) {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  const [editingComment, setEditingComment] = useState(null);
+  const [editText, setEditText] = useState('');
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const [likingComments, setLikingComments] = useState(new Set());
   const [deletingComments, setDeletingComments] = useState(new Set());
 
@@ -304,6 +310,47 @@ export default function CommentSection({ postId, initialComments = [] }) {
     }
   };
 
+  const handleEditComment = async (commentId) => {
+    if (!editText.trim()) {
+      return;
+    }
+
+    setIsSubmittingEdit(true);
+    setCommentError('');
+
+    try {
+      const result = await commentsService.updateComment(commentId, {
+        content: editText
+      }, user.id);
+
+      if (result.success) {
+        setEditingComment(null);
+        setEditText('');
+        fetchComments(); // Refresh comments
+      } else {
+        setCommentError(result.error);
+      }
+    } catch (err) {
+      console.error('Error updating comment:', err);
+      setCommentError('Network error while updating comment');
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
+
+  const startEditComment = (comment) => {
+    setEditingComment(comment.id);
+    setEditText(comment.content);
+    // Close reply form if open
+    setReplyingTo(null);
+    setReplyText('');
+  };
+
+  const cancelEditComment = () => {
+    setEditingComment(null);
+    setEditText('');
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-4">
@@ -442,7 +489,48 @@ export default function CommentSection({ postId, initialComments = [] }) {
                     </span>
                   </div>
                   <div className="text-gray-700 dark:text-gray-300 mb-2">
-                    <MarkdownContent content={comment.content} />
+                    {editingComment === comment.id ? (
+                      <div className="space-y-3">
+                        <MarkdownEditor
+                          value={editText}
+                          onChange={setEditText}
+                          height={120}
+                          preview="live"
+                          hideToolbar={false}
+                          placeholder="Edit your comment..."
+                          data-color-mode="auto"
+                        />
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Supports Markdown formatting
+                          </p>
+                          <div className="flex space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={cancelEditComment}
+                              disabled={isSubmittingEdit}
+                            >
+                              <X className="w-3 h-3 mr-1" />
+                              Cancel
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => handleEditComment(comment.id)}
+                              disabled={isSubmittingEdit || !editText.trim()}
+                              className="flex items-center"
+                            >
+                              <Save className="w-3 h-3 mr-1" />
+                              {isSubmittingEdit ? 'Saving...' : 'Save'}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <MarkdownContent content={comment.content} />
+                    )}
                   </div>
                   
                   {/* Comment Stats */}
@@ -488,6 +576,9 @@ export default function CommentSection({ postId, initialComments = [] }) {
                         }
                         setReplyingTo(replyingTo === comment.id ? null : comment.id);
                         setReplyText('');
+                        // Close edit form if open
+                        setEditingComment(null);
+                        setEditText('');
                       }}
                       className={`flex items-center transition-colors ${
                         isAuthenticated ? 'hover:text-blue-600 dark:hover:text-blue-400' : 'hover:text-blue-500 dark:hover:text-blue-400 text-gray-400 dark:text-gray-500'
@@ -497,6 +588,17 @@ export default function CommentSection({ postId, initialComments = [] }) {
                       <Reply className="w-4 h-4 mr-1" />
                       Reply
                     </button>
+                    {/* Edit button for own comments */}
+                    {isAuthenticated && user && comment.userId === user.id && editingComment !== comment.id && (
+                      <button
+                        onClick={() => startEditComment(comment)}
+                        className="flex items-center hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
+                        title="Edit comment"
+                      >
+                        <Edit3 className="w-4 h-4 mr-1" />
+                        Edit
+                      </button>
+                    )}
                     {/* Delete button for own comments */}
                     {isAuthenticated && user && comment.userId === user.id && (
                       <button
@@ -596,7 +698,48 @@ export default function CommentSection({ postId, initialComments = [] }) {
                           </span>
                         </div>
                         <div className="text-gray-700 dark:text-gray-300 text-sm mb-1">
-                          <MarkdownContent content={reply.content} />
+                          {editingComment === reply.id ? (
+                            <div className="space-y-3">
+                              <MarkdownEditor
+                                value={editText}
+                                onChange={setEditText}
+                                height={100}
+                                preview="live"
+                                hideToolbar={false}
+                                placeholder="Edit your reply..."
+                                data-color-mode="auto"
+                              />
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  Supports Markdown formatting
+                                </p>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={cancelEditComment}
+                                    disabled={isSubmittingEdit}
+                                  >
+                                    <X className="w-3 h-3 mr-1" />
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={() => handleEditComment(reply.id)}
+                                    disabled={isSubmittingEdit || !editText.trim()}
+                                    className="flex items-center"
+                                  >
+                                    <Save className="w-3 h-3 mr-1" />
+                                    {isSubmittingEdit ? 'Saving...' : 'Save'}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <MarkdownContent content={reply.content} />
+                          )}
                         </div>
                         
                         {/* Reply Stats */}
@@ -626,6 +769,17 @@ export default function CommentSection({ postId, initialComments = [] }) {
                               <Heart className="w-3 h-3 mr-1" />
                               {reply._count?.likes || 0} Likes
                             </div>
+                          )}
+                          {/* Edit button for own replies */}
+                          {isAuthenticated && user && reply.userId === user.id && editingComment !== reply.id && (
+                            <button
+                              onClick={() => startEditComment(reply)}
+                              className="flex items-center hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
+                              title="Edit reply"
+                            >
+                              <Edit3 className="w-3 h-3 mr-1" />
+                              Edit
+                            </button>
                           )}
                           {/* Delete button for own replies */}
                           {isAuthenticated && user && reply.userId === user.id && (
