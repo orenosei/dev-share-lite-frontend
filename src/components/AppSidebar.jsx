@@ -87,7 +87,7 @@ export function AppSidebar() {
     },
     {
       title: "Community",
-      url: "/users",
+      url: "/user",
       icon: Users,
       badge: stats.totalUsers > 0 ? stats.totalUsers.toLocaleString() : undefined,
     },
