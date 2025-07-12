@@ -5,7 +5,7 @@ import { MarkdownEditor } from '../../../../components/MarkdownEditor';
 import { MarkdownContent } from '../../../../components/MarkdownContent';
 import PhoneNumberInput from '../../../../components/PhoneNumberInput';
 import CountrySelect from '../../../../components/CountrySelect';
-import AvatarUpload from '../../../../components/AvatarUpload';
+import AvatarUpload from './AvatarUpload';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';

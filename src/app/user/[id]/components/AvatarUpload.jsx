@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Button } from './ui/button';
-import { useAuth } from '../hooks';
-import { userService } from '../services';
+import { Button } from '../../../../components/ui/button';
+import { useAuth } from '../../../../hooks';
+import { userService } from '../../../../services';
 import { 
   Upload, 
   X, 
