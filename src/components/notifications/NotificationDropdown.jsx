@@ -19,8 +19,7 @@ export default function NotificationDropdown({
   onMarkAsRead,
   onDelete,
   onLoadMore,
-  onRefresh,
-  onClose
+  onRefresh
 }) {
   return (
     <DropdownMenu onOpenChange={(open) => {
@@ -88,7 +87,6 @@ export default function NotificationDropdown({
                   notification={notification}
                   onMarkAsRead={onMarkAsRead}
                   onDelete={onDelete}
-                  onClose={onClose}
                 />
               ))}
             </div>

@@ -52,8 +52,7 @@ const getNotificationLink = (notification) => {
 export default function NotificationItem({ 
   notification, 
   onMarkAsRead, 
-  onDelete,
-  onClose
+  onDelete
 }) {
   const message = getNotificationMessage(notification);
   const link = getNotificationLink(notification);
@@ -75,13 +74,6 @@ export default function NotificationItem({
     // Tự động mark as read khi click
     if (!notification.isRead) {
       onMarkAsRead(notification.id);
-    }
-    
-    // Đóng dropdown sau khi click
-    if (onClose) {
-      setTimeout(() => {
-        onClose();
-      }, 100);
     }
   };
 

@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import NotificationBell from './NotificationBell';
+import { NotificationBell } from './notifications';
 
 export default function Navigation() {
   const { user, logout, isAuthenticated } = useAuth();
