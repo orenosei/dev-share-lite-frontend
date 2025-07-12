@@ -22,6 +22,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "DevShare Lite",
   description: "A developer community forum",
+  icons: {
+    icon: "/DevShareLite-logo.png",
+    shortcut: "/DevShareLite-logo.png",
+    apple: "/DevShareLite-logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {

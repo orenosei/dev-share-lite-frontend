@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '../hooks';
 import { useTheme } from '../hooks';
 import { useRouter } from 'next/navigation';
@@ -28,11 +29,20 @@ export default function Navigation() {
 
   return (
     <div className="flex items-center justify-between w-full">
-      {/* Page Title or Breadcrumb - can be customized per page */}
-      <div className="flex items-center space-x-4">
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-          DevShare Lite
-        </h1>
+      {/* Logo and Title */}
+      <div className="flex items-center space-x-3">
+        <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+          <Image
+            src="/DevShareLite-logo.png"
+            alt="DevShare Lite"
+            width={40}
+            height={40}
+            className="rounded-lg"
+          />
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">
+            DevShare Lite
+          </h1>
+        </Link>
       </div>
       
       {/* Right side actions */}

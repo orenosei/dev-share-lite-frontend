@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useAuth } from '../hooks';
 import { statsService, postsService } from '../services';
 import { Button } from '../components/ui/button';
@@ -91,6 +92,15 @@ export default function Home() {
       {/* Hero Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8">
         <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/DevShareLite-logo.png"
+              alt="DevShare Lite"
+              width={120}
+              height={120}
+              className="rounded-2xl shadow-lg"
+            />
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white sm:text-5xl">
             Welcome to{' '}
             <span className="text-indigo-600 dark:text-indigo-400">DevShare Lite</span>

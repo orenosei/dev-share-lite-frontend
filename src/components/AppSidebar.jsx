@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import Image from "next/image";
 import { 
   Home, 
   FileText, 
@@ -120,14 +121,16 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-3 px-3 py-4">
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-3">
-            <FileText className="h-7 w-7" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-sidebar-foreground">DevShare Lite</h2>
-            <p className="text-sm text-sidebar-foreground/60">Developer Community</p>
-          </div>
+        <div className="px-2 py-4">
+          <Link href="/" className="block transition-opacity hover:opacity-80">
+            <Image
+              src="/DevShareLite-logo.png"
+              alt="DevShare Lite"
+              width={200}
+              height={200}
+              className="w-full h-auto rounded-2xl shadow-lg"
+            />
+          </Link>
         </div>
       </SidebarHeader>
 
