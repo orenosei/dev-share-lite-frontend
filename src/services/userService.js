@@ -75,5 +75,55 @@ export const userService = {
     } catch (error) {
       return { success: false, error: error.message || 'Failed to delete user' };
     }
+  },
+
+  // Upload user avatar
+  uploadAvatar: async (userId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/users/${userId}/avatar`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          errorData = { message: errorText };
+        }
+        
+        throw new Error(errorData.message || 'Upload failed');
+      }
+
+      const data = await response.json();
+      
+      // If the backend already returns a success/data structure, use it directly
+      if (data.success !== undefined) {
+        return data;
+      }
+      
+      // Otherwise, wrap it in our standard format
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message || 'Failed to upload avatar' };
+    }
+  },
+
+  // Delete user avatar
+  deleteAvatar: async (userId) => {
+    try {
+      const data = await apiRequest(`/users/${userId}/avatar`, {
+        method: 'DELETE',
+      });
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message || 'Failed to delete avatar' };
+    }
   }
 };
