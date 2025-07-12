@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '../../../hooks';
+import { useAuth, useAlertDialogContext } from '../../../hooks';
 import { userService, postsService } from '../../../services';
 import { Button } from '../../../components/ui/button';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { user: currentUser, isAuthenticated } = useAuth();
+  const { showDeleteConfirm } = useAlertDialogContext();
   const [user, setUser] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -153,21 +154,25 @@ export default function UserProfilePage() {
   };
 
   const handleDeletePost = async (postId) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      try {
-        const result = await postsService.deletePost(postId, currentUser.id);
+    showDeleteConfirm({
+      title: 'Delete Post',
+      description: 'Are you sure you want to delete this post? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          const result = await postsService.deletePost(postId, currentUser.id);
 
-        if (result.success) {
-          // Refresh posts list
-          setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
-          fetchUserPosts();
-        } else {
-          console.error('Error deleting post:', result.error);
+          if (result.success) {
+            // Refresh posts list
+            setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
+            fetchUserPosts();
+          } else {
+            console.error('Error deleting post:', result.error);
+          }
+        } catch (err) {
+          console.error('Error deleting post:', err);
         }
-      } catch (err) {
-        console.error('Error deleting post:', err);
       }
-    }
+    });
   };
 
   const handleProfileSave = async (editForm) => {

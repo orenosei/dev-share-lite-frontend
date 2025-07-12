@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../hooks';
+import { useAuth, useToast } from '../../../hooks';
 import { postsService } from '../../../services';
 import { MarkdownEditor } from '../../../components/MarkdownEditor';
 import { MarkdownContent } from '../../../components/MarkdownContent';
@@ -14,6 +14,7 @@ import Link from 'next/link';
 
 function NewPostPage() {
   const { user, isAuthenticated } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [isEditing, setIsEditing] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
@@ -94,14 +95,14 @@ function NewPostPage() {
       if (result.success) {
         const newPost = result.data;
         const action = isPublishing ? 'published' : 'saved as draft';
-        alert(`Post ${action} successfully!`);
+        showSuccess(`Post ${action} successfully!`, 'Redirecting to your post...');
         window.location.href = `/posts/${newPost.id}`;
       } else {
-        alert(`Error ${isPublishing ? 'publishing' : 'saving'} post: ${result.error || 'An error occurred'}`);
+        showError(`Error ${isPublishing ? 'publishing' : 'saving'} post`, result.error || 'An error occurred');
       }
     } catch (error) {
       console.error('Error saving post:', error);
-      alert('Network error. Please try again.');
+      showError('Network error', 'Please try again.');
     } finally {
       setLoading(false);
     }

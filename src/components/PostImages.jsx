@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../hooks';
+import { useAuth, useToast, useAlertDialogContext } from '../hooks';
 import { uploadService } from '../services';
 import { 
   X, 
@@ -17,6 +17,8 @@ export default function PostImages({ images, isAuthor, postId, onImageDeleted })
   const [selectedImage, setSelectedImage] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const { user } = useAuth();
+  const { showError } = useToast();
+  const { showDeleteConfirm } = useAlertDialogContext();
 
   // Auto reset activeIndex when images change
   useEffect(() => {
@@ -25,27 +27,29 @@ export default function PostImages({ images, isAuthor, postId, onImageDeleted })
 
   const handleDeleteImage = async (imageId) => {
     if (!user || !isAuthor) {
-      alert('You do not have permission to delete this image');
+      showError('Permission denied', 'You do not have permission to delete this image');
       return;
     }
 
-    if (!confirm('Are you sure you want to delete this image?')) {
-      return;
-    }
-
-    try {
-      const result = await uploadService.deletePostImage(postId, imageId, user.id);
-      
-      if (result.success) {
-        if (onImageDeleted) {
-          onImageDeleted(imageId);
+    showDeleteConfirm({
+      title: 'Delete Image',
+      description: 'Are you sure you want to delete this image? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          const result = await uploadService.deletePostImage(postId, imageId, user.id);
+          
+          if (result.success) {
+            if (onImageDeleted) {
+              onImageDeleted(imageId);
+            }
+          } else {
+            showError('Delete failed', result.error || 'Failed to delete image');
+          }
+        } catch (error) {
+          showError('Error', 'Error deleting image: ' + error.message);
         }
-      } else {
-        alert(result.error || 'Failed to delete image');
       }
-    } catch (error) {
-      alert('Error deleting image: ' + error.message);
-    }
+    });
   };
 
   const openImageModal = (image) => {

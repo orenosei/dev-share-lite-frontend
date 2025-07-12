@@ -2,11 +2,12 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
-import { useAuth } from '../../hooks';
+import { useAuth, useToast } from '../../hooks';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function LoginPageContent() {
   const { login } = useAuth();
+  const { showSuccess } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
@@ -65,7 +66,7 @@ function LoginPageContent() {
       const result = await login(formData.identifier, formData.password);
 
       if (result.success) {
-        alert('Login successful!');
+        showSuccess('Login successful!', 'Welcome back!');
         setFormData({
           identifier: '',
           password: '',

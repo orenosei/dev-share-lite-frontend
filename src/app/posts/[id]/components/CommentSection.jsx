@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../../hooks';
+import { useAuth, useToast, useAlertDialogContext } from '../../../../hooks';
 import { commentsService } from '../../../../services';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
@@ -23,6 +23,8 @@ import Link from 'next/link';
 export default function CommentSection({ postId, initialComments = [] }) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { showError } = useToast();
+  const { showDeleteConfirm } = useAlertDialogContext();
   const [comments, setComments] = useState(initialComments);
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -281,33 +283,38 @@ export default function CommentSection({ postId, initialComments = [] }) {
   };
 
   const handleDeleteComment = async (commentId, isParent = false) => {
-    if (!window.confirm(`Are you sure you want to delete this comment${isParent ? ' and all its replies' : ''}?`)) {
-      return;
-    }
+    const title = 'Delete Comment';
+    const description = `Are you sure you want to delete this comment${isParent ? ' and all its replies' : ''}? This action cannot be undone.`;
+    
+    showDeleteConfirm({
+      title,
+      description,
+      onConfirm: async () => {
+        if (deletingComments.has(commentId)) return;
 
-    if (deletingComments.has(commentId)) return;
+        setDeletingComments(prev => new Set(prev).add(commentId));
 
-    setDeletingComments(prev => new Set(prev).add(commentId));
+        try {
+          const result = await commentsService.deleteComment(commentId, user.id);
 
-    try {
-      const result = await commentsService.deleteComment(commentId, user.id);
-
-      if (result.success) {
-        fetchComments(); // Refresh comments
-      } else {
-        console.error('Error deleting comment:', result.error);
-        alert('Failed to delete comment');
+          if (result.success) {
+            fetchComments(); // Refresh comments
+          } else {
+            console.error('Error deleting comment:', result.error);
+            showError('Delete failed', 'Failed to delete comment');
+          }
+        } catch (err) {
+          console.error('Error deleting comment:', err);
+          showError('Network error', 'Network error while deleting comment');
+        } finally {
+          setDeletingComments(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(commentId);
+            return newSet;
+          });
+        }
       }
-    } catch (err) {
-      console.error('Error deleting comment:', err);
-      alert('Network error while deleting comment');
-    } finally {
-      setDeletingComments(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(commentId);
-        return newSet;
-      });
-    }
+    });
   };
 
   const handleEditComment = async (commentId) => {

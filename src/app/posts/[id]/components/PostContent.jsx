@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../../hooks';
+import { useAuth, useToast, useAlertDialogContext } from '../../../../hooks';
 import { postsService } from '../../../../services';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
@@ -23,6 +23,8 @@ import Link from 'next/link';
 export default function PostContent({ post, onPostUpdate }) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { showError } = useToast();
+  const { showDeleteConfirm } = useAlertDialogContext();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
   const [isLiking, setIsLiking] = useState(false);
@@ -85,23 +87,25 @@ export default function PostContent({ post, onPostUpdate }) {
   };
 
   const handleDeletePost = async () => {
-    if (!window.confirm('Are you sure you want to delete this post?')) {
-      return;
-    }
+    showDeleteConfirm({
+      title: 'Delete Post',
+      description: 'Are you sure you want to delete this post? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          const result = await postsService.deletePost(post.id, user.id);
 
-    try {
-      const result = await postsService.deletePost(post.id, user.id);
-
-      if (result.success) {
-        router.push('/posts');
-      } else {
-        console.error('Error deleting post:', result.error);
-        alert('Error deleting post');
+          if (result.success) {
+            router.push('/posts');
+          } else {
+            console.error('Error deleting post:', result.error);
+            showError('Delete failed', 'Error deleting post');
+          }
+        } catch (err) {
+          console.error('Error deleting post:', err);
+          showError('Network error', 'Failed to delete post due to network error');
+        }
       }
-    } catch (err) {
-      console.error('Error deleting post:', err);
-      alert('Network error');
-    }
+    });
   };
 
   const handleImagesUploaded = (uploadResult) => {

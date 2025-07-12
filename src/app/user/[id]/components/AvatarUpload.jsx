@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Button } from '../../../../components/ui/button';
-import { useAuth } from '../../../../hooks';
+import { useAuth, useToast, useAlertDialogContext } from '../../../../hooks';
 import { userService } from '../../../../services';
 import { 
   Upload, 
@@ -20,6 +20,8 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdated
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
   const { user } = useAuth();
+  const { showError, showSuccess, showWarning } = useToast();
+  const { showDeleteConfirm } = useAlertDialogContext();
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -28,13 +30,13 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdated
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      showError('Invalid file type', 'Please select an image file');
       return;
     }
     
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      showError('File too large', 'File size must be less than 5MB');
       return;
     }
 
@@ -47,12 +49,12 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdated
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      alert('Please select a file to upload');
+      showWarning('No file selected', 'Please select a file to upload');
       return;
     }
 
     if (!user) {
-      alert('Please login to upload avatar');
+      showError('Authentication required', 'Please login to upload avatar');
       return;
     }
 
@@ -83,7 +85,7 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdated
           if (avatarUrl) {
             onAvatarUpdated(avatarUrl);
           } else {
-            alert('Avatar uploaded but could not get URL. Please refresh the page.');
+            showWarning('Upload completed', 'Avatar uploaded but could not get URL. Please refresh the page.');
             return;
           }
         }
@@ -93,13 +95,13 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdated
           fileInputRef.current.value = '';
         }
         
-        alert('Avatar uploaded successfully!');
+        showSuccess('Upload successful', 'Avatar uploaded successfully!');
       } else {
-        alert(result.error || 'Failed to upload avatar');
+        showError('Upload failed', result.error || 'Failed to upload avatar');
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Error uploading avatar: ' + error.message);
+      showError('Error', 'Error uploading avatar: ' + error.message);
     } finally {
       setUploading(false);
       setUploadProgress(0);
@@ -108,34 +110,36 @@ export default function AvatarUpload({ userId, currentAvatarUrl, onAvatarUpdated
 
   const handleDeleteAvatar = async () => {
     if (!user) {
-      alert('Please login to delete avatar');
+      showError('Authentication required', 'Please login to delete avatar');
       return;
     }
 
     if (!currentAvatarUrl) {
-      alert('No avatar to delete');
+      showWarning('No avatar', 'No avatar to delete');
       return;
     }
 
-    if (!confirm('Are you sure you want to delete your avatar?')) {
-      return;
-    }
+    showDeleteConfirm({
+      title: 'Delete Avatar',
+      description: 'Are you sure you want to delete your avatar? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          const result = await userService.deleteAvatar(userId);
 
-    try {
-      const result = await userService.deleteAvatar(userId);
-
-      if (result.success) {
-        if (onAvatarDeleted) {
-          onAvatarDeleted();
+          if (result.success) {
+            if (onAvatarDeleted) {
+              onAvatarDeleted();
+            }
+            showSuccess('Avatar deleted', 'Your avatar has been deleted successfully');
+          } else {
+            showError('Delete failed', result.error || 'Failed to delete avatar');
+          }
+        } catch (error) {
+          console.error('Delete error:', error);
+          showError('Error', 'Error deleting avatar: ' + error.message);
         }
-        alert('Avatar deleted successfully!');
-      } else {
-        alert(result.error || 'Failed to delete avatar');
       }
-    } catch (error) {
-      console.error('Delete error:', error);
-      alert('Error deleting avatar: ' + error.message);
-    }
+    });
   };
 
   const cancelSelection = () => {

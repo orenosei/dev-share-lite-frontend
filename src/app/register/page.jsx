@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useAuth } from '../../hooks';
+import { useAuth, useToast } from '../../hooks';
 import PhoneNumberInput from '../../components/PhoneNumberInput';
 import CountrySelect from '../../components/CountrySelect';
 
 export default function RegisterPage() {
   const { register } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -92,7 +93,7 @@ export default function RegisterPage() {
       });
 
       if (result.success) {
-        alert('Registration successful! Please login.');
+        showSuccess('Registration successful!', 'Please login with your new account.');
         setFormData({
           username: '',
           email: '',

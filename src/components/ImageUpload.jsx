@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { uploadService } from '../services';
-import { useAuth } from '../hooks';
+import { useAuth, useToast, useAlertDialogContext } from '../hooks';
 import { 
   Upload, 
   X, 
@@ -17,6 +17,8 @@ export default function ImageUpload({ postId, onImagesUploaded, onImageDeleted }
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
   const { user } = useAuth();
+  const { showError, showSuccess, showWarning } = useToast();
+  const { showDeleteConfirm } = useAlertDialogContext();
 
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files);
@@ -24,11 +26,11 @@ export default function ImageUpload({ postId, onImagesUploaded, onImageDeleted }
     // Validate file types
     const validFiles = files.filter(file => {
       if (!file.type.startsWith('image/')) {
-        alert(`${file.name} is not an image file`);
+        showError('Invalid file type', `${file.name} is not an image file`);
         return false;
       }
       if (file.size > 5 * 1024 * 1024) { // 5MB limit to match backend
-        alert(`${file.name} is too large (max 5MB)`);
+        showError('File too large', `${file.name} is too large (max 5MB)`);
         return false;
       }
       return true;
@@ -43,12 +45,12 @@ export default function ImageUpload({ postId, onImagesUploaded, onImageDeleted }
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) {
-      alert('Please select files to upload');
+      showWarning('No files selected', 'Please select files to upload');
       return;
     }
 
     if (!user) {
-      alert('Please login to upload images');
+      showError('Authentication required', 'Please login to upload images');
       return;
     }
 
@@ -95,13 +97,13 @@ export default function ImageUpload({ postId, onImagesUploaded, onImageDeleted }
           fileInputRef.current.value = '';
         }
         
-        alert(`Successfully uploaded ${data.images?.length || 1} image(s)!`);
+        showSuccess('Upload successful', `Successfully uploaded ${data.images?.length || 1} image(s)!`);
       } else {
-        alert(data.message || 'Failed to upload images');
+        showError('Upload failed', data.message || 'Failed to upload images');
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Error uploading images: ' + error.message);
+      showError('Error', 'Error uploading images: ' + error.message);
     } finally {
       setUploading(false);
       setUploadProgress(0);
@@ -110,27 +112,29 @@ export default function ImageUpload({ postId, onImagesUploaded, onImageDeleted }
 
   const handleDeleteImage = async (imageId) => {
     if (!user) {
-      alert('Please login to delete images');
+      showError('Authentication required', 'Please login to delete images');
       return;
     }
 
-    if (!confirm('Are you sure you want to delete this image?')) {
-      return;
-    }
-
-    try {
-      const result = await uploadService.deletePostImage(imageId, user.id);
-      
-      if (result.success) {
-        if (onImageDeleted) {
-          onImageDeleted(imageId);
+    showDeleteConfirm({
+      title: 'Delete Image',
+      description: 'Are you sure you want to delete this image? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          const result = await uploadService.deletePostImage(imageId, user.id);
+          
+          if (result.success) {
+            if (onImageDeleted) {
+              onImageDeleted(imageId);
+            }
+          } else {
+            showError('Delete failed', result.error || 'Failed to delete image');
+          }
+        } catch (error) {
+          showError('Error', 'Error deleting image: ' + error.message);
         }
-      } else {
-        alert(result.error || 'Failed to delete image');
       }
-    } catch (error) {
-      alert('Error deleting image: ' + error.message);
-    }
+    });
   };
 
   return (
