@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import NotificationBell from './NotificationBell';
 
 export default function Navigation() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -45,6 +46,9 @@ export default function Navigation() {
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
+        
+        {/* Notification Bell - only show when authenticated */}
+        {isAuthenticated && <NotificationBell />}
         
         {isAuthenticated ? (
           <DropdownMenu>
