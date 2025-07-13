@@ -105,6 +105,27 @@ export const postsService = {
     }
   },
 
+  // Get liked posts by user
+  getLikedPostsByUser: async (userId, options = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      Object.entries(options).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+      
+      const queryString = queryParams.toString();
+      const endpoint = queryString ? `/posts/user/${userId}/liked?${queryString}` : `/posts/user/${userId}/liked`;
+      
+      const data = await apiRequest(endpoint);
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message || 'Failed to fetch liked posts' };
+    }
+  },
+
   // Get post tags
   getTags: async () => {
     try {

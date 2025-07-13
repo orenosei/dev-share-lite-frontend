@@ -134,7 +134,7 @@ function PostsPageContent() {
       
       if (result.success) {
         const data = result.data;
-        console.log('Fetched posts:', data);
+        // console.log('Fetched posts:', data);
         
         // Check if data has pagination structure
         if (data && data.posts && data.pagination) {

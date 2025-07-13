@@ -93,25 +93,25 @@ export default function UserProfilePage() {
       const result = await postsService.getPostsByUser(params.id, options);
       
       if (result.success) {
-        const data = result.data;
+        // Handle nested data structure from API response
+        const actualData = result.data.data || result.data;
+        
         // Check if data has pagination structure
-        if (data && data.posts && data.pagination) {
-          setUserPosts(data.posts);
+        if (actualData && actualData.posts && actualData.pagination) {
+          setUserPosts(actualData.posts);
           setPagination(prev => ({
             ...prev,
-            total: data.pagination.total,
-            totalPages: data.pagination.totalPages
+            total: actualData.pagination.total,
+            totalPages: actualData.pagination.totalPages
           }));
         } else {
           // Fallback for old format
-          setUserPosts(Array.isArray(data) ? data : []);
+          setUserPosts(Array.isArray(actualData) ? actualData : []);
         }
       } else {
-        console.error('Error fetching user posts:', result.error);
         setUserPosts([]);
       }
     } catch (err) {
-      console.error('Error fetching user posts:', err);
       setUserPosts([]);
     }
   };
@@ -129,17 +129,17 @@ export default function UserProfilePage() {
         ]);
 
         setPostCounts({
-          total: allResult.success ? allResult.data?.pagination?.total || 0 : 0,
-          published: publishedResult.success ? publishedResult.data?.pagination?.total || 0 : 0,
-          draft: draftResult.success ? draftResult.data?.pagination?.total || 0 : 0
+          total: allResult.success ? (allResult.data?.data?.pagination?.total || allResult.data?.pagination?.total || 0) : 0,
+          published: publishedResult.success ? (publishedResult.data?.data?.pagination?.total || publishedResult.data?.pagination?.total || 0) : 0,
+          draft: draftResult.success ? (draftResult.data?.data?.pagination?.total || draftResult.data?.pagination?.total || 0) : 0
         });
       } else {
         // For other profiles, only get published count
         const result = await postsService.getPostsByUser(params.id, { page: 1, limit: 1, status: 'PUBLISHED' });
         
         setPostCounts({
-          total: result.success ? result.data?.pagination?.total || 0 : 0,
-          published: result.success ? result.data?.pagination?.total || 0 : 0,
+          total: result.success ? (result.data?.data?.pagination?.total || result.data?.pagination?.total || 0) : 0,
+          published: result.success ? (result.data?.data?.pagination?.total || result.data?.pagination?.total || 0) : 0,
           draft: 0
         });
       }
@@ -154,25 +154,28 @@ export default function UserProfilePage() {
   };
 
   const handleDeletePost = async (postId) => {
-    showDeleteConfirm({
-      title: 'Delete Post',
-      description: 'Are you sure you want to delete this post? This action cannot be undone.',
-      onConfirm: async () => {
-        try {
-          const result = await postsService.deletePost(postId, currentUser.id);
+    const confirmed = await showDeleteConfirm(
+      'Delete Post',
+      'Are you sure you want to delete this post? This action cannot be undone.',
+      'Delete'
+    );
 
-          if (result.success) {
-            // Refresh posts list
-            setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
-            fetchUserPosts();
-          } else {
-            console.error('Error deleting post:', result.error);
-          }
-        } catch (err) {
-          console.error('Error deleting post:', err);
+    if (confirmed) {
+      try {
+        const result = await postsService.deletePost(postId, currentUser.id);
+
+        if (result.success) {
+          // Refresh posts list
+          setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
+          fetchUserPosts();
+          fetchPostCounts(); // Also refresh counts
+        } else {
+          console.error('Error deleting post:', result.error);
         }
+      } catch (err) {
+        console.error('Error deleting post:', err);
       }
-    });
+    }
   };
 
   const handleProfileSave = async (editForm) => {
@@ -259,6 +262,7 @@ export default function UserProfilePage() {
               onPageChange={handlePageChange}
               onDeletePost={handleDeletePost}
               setPagination={setPagination}
+              userId={params.id}
             />
           </div>
         </div>
